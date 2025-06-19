@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # codealpha_fitness_tracker_app
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# CodeAlpha_FitnessTrackerApp
+>>>>>>> b769a25fcb93ed9e0e96cfe01bdb7e56c0184cd2
