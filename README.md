@@ -1,20 +1,20 @@
-<<<<<<< HEAD
-# codealpha_fitness_tracker_app
+# CodeAlpha Fitness Tracker App
+This is a Flutter-based mobile app developed as part of the *CodeAlpha Internship Program*.
 
-A new Flutter project.
+## 🔧 Features
+- Learn words and phrases in different languages
+- Daily lessons and flashcards
+- Pronunciation and translation support
+- Quizzes to test learning progress
+- Clean and modern UI
 
-## Getting Started
+## 📁 Project Structure
+- /lib/screens – App screens (Home, Lessons, Quiz)
+- /lib/widgets – Reusable UI components
+- /lib/models – Data structures
+- /assets/ – Images, fonts, audio files
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
-# CodeAlpha_FitnessTrackerApp
->>>>>>> b769a25fcb93ed9e0e96cfe01bdb7e56c0184cd2
+## 🚀 Getting Started
+```bash
+fvm flutter pub get
+fvm flutter run
