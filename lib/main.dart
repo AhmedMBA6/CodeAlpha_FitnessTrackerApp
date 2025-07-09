@@ -1,6 +1,12 @@
+import 'package:codealpha_fitness_tracker_app/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async{
+  // Ensure that plugin services are initialized so that Firebase can be used.
+  // initialize Firebase services.
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
