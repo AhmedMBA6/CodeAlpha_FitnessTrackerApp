@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/auth/presentation/login/login_screen.dart';
+import '../../features/auth/presentation/signup/signup_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -15,9 +16,9 @@ class AppRouter {
       case Routes.loginScreen:
        screen = LoginScreen();
         break;
-      // case Routes.signupScreen:
-      //   screen = SignupScreen();
-      //   break;
+      case Routes.signupScreen:
+        screen = SignupScreen();
+        break;
       case Routes.homeScreen:
         screen = MyHomePage(title: "Fitness Tracker",);
         break;

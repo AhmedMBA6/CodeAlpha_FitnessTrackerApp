@@ -4,31 +4,40 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/auth_cubit.dart';
 import '../../../logic/auth_state.dart';
 
-class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+class SignupForm extends StatefulWidget {
+  const SignupForm({super.key});
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  State<SignupForm> createState() => _SignupFormState();
 }
 
-class _LoginFormState extends State<LoginForm> {
+class _SignupFormState extends State<SignupForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _confirmCtrl.dispose();
     super.dispose();
   }
 
-  void _submitLogin(BuildContext context) {
+  void _submitSignup(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthCubit>().emitLoginState(
-        _emailCtrl.text.trim(),
-        _passCtrl.text.trim(),
-      );
+      if (_passCtrl.text.trim() != _confirmCtrl.text.trim()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Passwords do not match")),
+        );
+        return;
+      }
+
+      context.read<AuthCubit>().emitSignUpState(
+            _emailCtrl.text.trim(),
+            _passCtrl.text.trim(),
+          );
     }
   }
 
@@ -37,15 +46,11 @@ class _LoginFormState extends State<LoginForm> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
-        } else if (state is AuthSuccess) {
-          if (state.isNewUser) {
-            Navigator.pushReplacementNamed(context, '/complete-profile');
-          } else {
-            Navigator.pushReplacementNamed(context, Routes.homeScreen);
-          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        } else if (state is AuthSuccess && state.isNewUser) {
+          Navigator.pushReplacementNamed(context, '/complete-profile');
         }
       },
       builder: (context, state) {
@@ -56,7 +61,6 @@ class _LoginFormState extends State<LoginForm> {
               TextFormField(
                 controller: _emailCtrl,
                 decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
                 validator: (val) =>
                     val == null || val.isEmpty ? 'Enter your email' : null,
               ),
@@ -66,23 +70,33 @@ class _LoginFormState extends State<LoginForm> {
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Password'),
                 validator: (val) => val == null || val.length < 6
-                    ? 'Enter a valid password'
+                    ? 'Password must be at least 6 characters'
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _confirmCtrl,
+                obscureText: true,
+                decoration:
+                    const InputDecoration(labelText: 'Confirm Password'),
+                validator: (val) => val == null || val.isEmpty
+                    ? 'Please confirm your password'
                     : null,
               ),
               const SizedBox(height: 24),
               state is AuthLoading
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
-                      onPressed: () => _submitLogin(context),
-                      child: const Text("Login"),
+                      onPressed: () => _submitSignup(context),
+                      child: const Text("Sign Up"),
                     ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, Routes.signupScreen);
+                  Navigator.pushReplacementNamed(context, Routes.loginScreen);
                 },
-                child: const Text("Don't have an account? Sign up"),
-              ),
+                child: const Text("Already have an account? Login"),
+              )
             ],
           ),
         );
