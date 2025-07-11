@@ -19,4 +19,4 @@ class ActivityLogRepository {
   Future<int> deleteActivity(int id) async {
     return await _dbHelper.deleteActivity(id);
   }
-}
+} 
