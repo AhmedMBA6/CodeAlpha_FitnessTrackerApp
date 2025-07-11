@@ -50,7 +50,7 @@ class _SignupFormState extends State<SignupForm> {
             SnackBar(content: Text(state.message)),
           );
         } else if (state is AuthSuccess && state.isNewUser) {
-          Navigator.pushReplacementNamed(context, '/complete-profile');
+          Navigator.pushReplacementNamed(context, Routes.completeProfile);
         }
       },
       builder: (context, state) {

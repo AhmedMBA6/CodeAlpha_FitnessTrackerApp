@@ -42,7 +42,7 @@ class _LoginFormState extends State<LoginForm> {
           ).showSnackBar(SnackBar(content: Text(state.message)));
         } else if (state is AuthSuccess) {
           if (state.isNewUser) {
-            Navigator.pushReplacementNamed(context, '/complete-profile');
+            Navigator.pushReplacementNamed(context, Routes.completeProfile);
           } else {
             Navigator.pushReplacementNamed(context, Routes.homeScreen);
           }
