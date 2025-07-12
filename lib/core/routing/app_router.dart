@@ -14,6 +14,8 @@ import '../../features/user_profile/presentation/complete_profile_screen.dart';
 import '../../features/activity_log/data/repos/activity_log_repository.dart';
 import '../../features/activity_log/logic/activity_log_cubit.dart';
 import '../../features/activity_log/presentation/activity_log_list_screen.dart';
+import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/dashboard/logic/dashboard_cubit.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -39,6 +41,12 @@ class AppRouter {
         screen = BlocProvider(
           create: (_) => ActivityLogCubit(ActivityLogRepository())..loadActivities(),
           child: ActivityLogListScreen(),
+        );
+        break;
+      case Routes.dashboard:
+        screen = BlocProvider(
+          create: (_) => DashboardCubit(ActivityLogRepository())..loadDashboard(),
+          child: DashboardScreen(),
         );
         break;
       default:
