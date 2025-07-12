@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:json_annotation/json_annotation.dart';
 import 'route_point.dart';
+import '../../../activity_goals/data/models/activity_goal.dart';
 
 part 'route_track.g.dart';
 
@@ -19,6 +20,7 @@ class RouteTrack {
   final String activityType; // running, cycling, walking, etc.
   final Duration pausedDuration; // total paused time
   final DateTime? lastPausedTime; // when pause started
+  final ActivityGoal? goal; // optional goal for this activity
 
   const RouteTrack({
     required this.id,
@@ -34,6 +36,7 @@ class RouteTrack {
     required this.activityType,
     this.pausedDuration = Duration.zero,
     this.lastPausedTime,
+    this.goal,
   });
 
   factory RouteTrack.fromJson(Map<String, dynamic> json) => _$RouteTrackFromJson(json);
@@ -53,10 +56,40 @@ class RouteTrack {
       'activity_type': activityType,
       'paused_duration': pausedDuration.inMilliseconds,
       'last_paused_time': lastPausedTime?.toIso8601String(),
+      'goal_type': goal?.type.name,
+      'goal_distance': goal?.goalDistance,
+      'goal_destination_lat': goal?.goalDestination?.latitude,
+      'goal_destination_lng': goal?.goalDestination?.longitude,
+      'goal_destination_timestamp': goal?.goalDestination?.timestamp.toIso8601String(),
+      'goal_description': goal?.goalDescription,
+      'goal_created_at': goal?.createdAt.toIso8601String(),
     };
   }
 
   factory RouteTrack.fromMap(Map<String, dynamic> map, [List<RoutePoint>? points]) {
+    ActivityGoal? goal;
+    if (map['goal_type'] != null) {
+      RoutePoint? destination;
+      if (map['goal_destination_lat'] != null && map['goal_destination_lng'] != null) {
+        destination = RoutePoint(
+          latitude: map['goal_destination_lat'] as double,
+          longitude: map['goal_destination_lng'] as double,
+          timestamp: DateTime.parse(map['goal_destination_timestamp'] as String),
+        );
+      }
+
+      goal = ActivityGoal(
+        type: GoalType.values.firstWhere(
+          (e) => e.name == map['goal_type'],
+          orElse: () => GoalType.distance,
+        ),
+        goalDistance: map['goal_distance'] as double?,
+        goalDestination: destination,
+        goalDescription: map['goal_description'] as String?,
+        createdAt: DateTime.parse(map['goal_created_at'] as String),
+      );
+    }
+
     return RouteTrack(
       id: map['id'] as String,
       name: map['name'] as String,
@@ -73,6 +106,7 @@ class RouteTrack {
       lastPausedTime: map['last_paused_time'] != null && map['last_paused_time'] is String
           ? DateTime.tryParse(map['last_paused_time'] as String)
           : null,
+      goal: goal,
     );
   }
 
@@ -90,6 +124,7 @@ class RouteTrack {
     String? activityType,
     Duration? pausedDuration,
     DateTime? lastPausedTime,
+    ActivityGoal? goal,
   }) {
     return RouteTrack(
       id: id ?? this.id,
@@ -105,6 +140,7 @@ class RouteTrack {
       activityType: activityType ?? this.activityType,
       pausedDuration: pausedDuration ?? this.pausedDuration,
       lastPausedTime: lastPausedTime ?? this.lastPausedTime,
+      goal: goal ?? this.goal,
     );
   }
 
@@ -138,8 +174,46 @@ class RouteTrack {
     return earthRadius * c;
   }
 
+  /// Calculates progress towards the goal (0.0 to 1.0)
+  double get goalProgress {
+    if (goal == null) return 0.0;
+    
+    switch (goal!.type) {
+      case GoalType.distance:
+        if (goal!.goalDistance == null || goal!.goalDistance! <= 0) return 0.0;
+        return (currentDistance / goal!.goalDistance!).clamp(0.0, 1.0);
+      case GoalType.destination:
+        if (goal!.goalDestination == null || points.isEmpty) return 0.0;
+        final currentPoint = points.last;
+        final distanceToGoal = _calculateDistance(currentPoint, goal!.goalDestination!);
+        // Consider goal reached if within 50 meters
+        return distanceToGoal <= 50 ? 1.0 : 0.0;
+    }
+  }
+
+  /// Gets the distance to the goal destination in meters
+  double? get distanceToGoal {
+    if (goal?.type != GoalType.destination || goal?.goalDestination == null || points.isEmpty) {
+      return null;
+    }
+    final currentPoint = points.last;
+    return _calculateDistance(currentPoint, goal!.goalDestination!);
+  }
+
+  /// Checks if the goal has been reached
+  bool get isGoalReached {
+    if (goal == null) return false;
+    
+    switch (goal!.type) {
+      case GoalType.distance:
+        return currentDistance >= (goal!.goalDistance ?? 0);
+      case GoalType.destination:
+        return distanceToGoal != null && distanceToGoal! <= 50; // Within 50 meters
+    }
+  }
+
   @override
   String toString() {
-    return 'RouteTrack(id: $id, name: $name, startTime: $startTime, endTime: $endTime, points: ${points.length}, totalDistance: $totalDistance, totalDuration: $totalDuration, averageSpeed: $averageSpeed, maxSpeed: $maxSpeed, elevationGain: $elevationGain, activityType: $activityType)';
+    return 'RouteTrack(id: $id, name: $name, startTime: $startTime, endTime: $endTime, points: ${points.length}, totalDistance: $totalDistance, totalDuration: $totalDuration, averageSpeed: $averageSpeed, maxSpeed: $maxSpeed, elevationGain: $elevationGain, activityType: $activityType, goal: $goal)';
   }
 } 

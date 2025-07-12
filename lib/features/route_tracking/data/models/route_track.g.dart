@@ -22,6 +22,15 @@ RouteTrack _$RouteTrackFromJson(Map<String, dynamic> json) => RouteTrack(
   maxSpeed: (json['maxSpeed'] as num).toDouble(),
   elevationGain: (json['elevationGain'] as num?)?.toDouble(),
   activityType: json['activityType'] as String,
+  pausedDuration: json['pausedDuration'] == null
+      ? Duration.zero
+      : Duration(microseconds: (json['pausedDuration'] as num).toInt()),
+  lastPausedTime: json['lastPausedTime'] == null
+      ? null
+      : DateTime.parse(json['lastPausedTime'] as String),
+  goal: json['goal'] == null
+      ? null
+      : ActivityGoal.fromJson(json['goal'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$RouteTrackToJson(RouteTrack instance) =>
@@ -37,4 +46,7 @@ Map<String, dynamic> _$RouteTrackToJson(RouteTrack instance) =>
       'maxSpeed': instance.maxSpeed,
       'elevationGain': instance.elevationGain,
       'activityType': instance.activityType,
+      'pausedDuration': instance.pausedDuration.inMicroseconds,
+      'lastPausedTime': instance.lastPausedTime?.toIso8601String(),
+      'goal': instance.goal,
     };

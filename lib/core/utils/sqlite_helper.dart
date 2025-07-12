@@ -22,7 +22,7 @@ class SQLiteHelper {
     final path = join(dbPath, 'fitness_tracker.db');
     return await openDatabase(
       path,
-      version: 3, // Bump version to force migration
+      version: 4, // Bump version to add goal support
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE activity_logs (
@@ -49,7 +49,14 @@ class SQLiteHelper {
             elevation_gain REAL,
             activity_type TEXT NOT NULL,
             paused_duration INTEGER,
-            last_paused_time TEXT
+            last_paused_time TEXT,
+            goal_type TEXT,
+            goal_distance REAL,
+            goal_destination_lat REAL,
+            goal_destination_lng REAL,
+            goal_destination_timestamp TEXT,
+            goal_description TEXT,
+            goal_created_at TEXT
           )
         ''');
         
@@ -80,7 +87,14 @@ class SQLiteHelper {
             elevation_gain REAL,
             activity_type TEXT NOT NULL,
             paused_duration INTEGER,
-            last_paused_time TEXT
+            last_paused_time TEXT,
+            goal_type TEXT,
+            goal_distance REAL,
+            goal_destination_lat REAL,
+            goal_destination_lng REAL,
+            goal_destination_timestamp TEXT,
+            goal_description TEXT,
+            goal_created_at TEXT
           )
         ''');
       },
@@ -125,6 +139,136 @@ class SQLiteHelper {
         }
         try {
           await db.execute('ALTER TABLE active_routes ADD COLUMN last_paused_time TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        
+        // Add goal columns to routes table
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_type TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_distance REAL;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_destination_lat REAL;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_destination_lng REAL;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_destination_timestamp TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_description TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE routes ADD COLUMN goal_created_at TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        
+        // Add goal columns to active_routes table
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_type TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_distance REAL;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_destination_lat REAL;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_destination_lng REAL;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_destination_timestamp TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_description TEXT;');
+        } catch (e) {
+          if (!e.toString().contains('duplicate column')) {
+            if (!e.toString().contains('no such table')) {
+              rethrow;
+            }
+          }
+        }
+        try {
+          await db.execute('ALTER TABLE active_routes ADD COLUMN goal_created_at TEXT;');
         } catch (e) {
           if (!e.toString().contains('duplicate column')) {
             if (!e.toString().contains('no such table')) {
