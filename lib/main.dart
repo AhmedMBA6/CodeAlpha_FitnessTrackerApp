@@ -128,6 +128,13 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, Routes.dashboard);
+              },
+              child: const Text('Go to Dashboard'),
+            ),
           ],
         ),
       ),
