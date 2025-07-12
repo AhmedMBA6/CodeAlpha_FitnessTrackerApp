@@ -1,3 +1,4 @@
+import 'package:codealpha_fitness_tracker_app/core/routing/routes.dart';
 import 'package:codealpha_fitness_tracker_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,6 +46,10 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       );
 
       context.read<UserProfileCubit>().saveProfile(profile);
+      Navigator.pushReplacementNamed(
+        context,
+        Routes.homeScreen,
+      );
     }
   }
 

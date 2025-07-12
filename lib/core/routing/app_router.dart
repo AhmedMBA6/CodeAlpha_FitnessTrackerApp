@@ -16,6 +16,9 @@ import '../../features/activity_log/logic/activity_log_cubit.dart';
 import '../../features/activity_log/presentation/activity_log_list_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/dashboard/logic/dashboard_cubit.dart';
+import '../../features/route_tracking/presentation/route_tracking_screen.dart';
+import '../../features/route_tracking/logic/cubit/route_tracking_cubit.dart';
+import '../../features/route_tracking/data/repositories/route_tracking_repository.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -47,6 +50,12 @@ class AppRouter {
         screen = BlocProvider(
           create: (_) => DashboardCubit(ActivityLogRepository())..loadDashboard(),
           child: DashboardScreen(),
+        );
+        break;
+      case Routes.routeTracking:
+        screen = BlocProvider(
+          create: (_) => RouteTrackingCubit(repository: RouteTrackingRepository()),
+          child: const RouteTrackingScreen(),
         );
         break;
       default:
