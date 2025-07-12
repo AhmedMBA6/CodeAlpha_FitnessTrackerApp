@@ -135,6 +135,13 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text('Go to Dashboard'),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, Routes.routeTracking);
+              },
+              child: const Text('Route Tracking'),
+            ),
           ],
         ),
       ),
