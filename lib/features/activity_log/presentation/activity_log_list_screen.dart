@@ -53,9 +53,7 @@ class ActivityLogListScreen extends StatelessWidget {
                 return ListTile(
                   title: Text(log.activityType),
                   subtitle: Text(
-                    'Duration: ${log.duration} min\nCalories: ${log.calories}\nDate: ${log.date.toLocal().toIso8601String().split('T').first}' +
-                    (log.heartRate != null ? '\nHeart Rate: ${log.heartRate}' : '') +
-                    (log.distance != null ? '\nDistance: ${log.distance} km' : ''),
+                    'Duration: ${log.duration} min\nCalories: ${log.calories}\nDate: ${log.date.toLocal().toIso8601String().split('T').first}${log.heartRate != null ? '\nHeart Rate: ${log.heartRate}' : ''}${log.distance != null ? '\nDistance: ${log.distance} km' : ''}',
                   ),
                   isThreeLine: true,
                   trailing: Row(
@@ -83,8 +81,8 @@ class ActivityLogListScreen extends StatelessWidget {
       floatingActionButton: Builder(
         builder: (fabContext) => FloatingActionButton(
           onPressed: () => _showForm(fabContext),
-          child: const Icon(Icons.add),
           tooltip: 'Add Activity',
+          child: const Icon(Icons.add),
         ),
       ),
     );

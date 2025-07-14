@@ -18,7 +18,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String _selectedType = DashboardConstants.defaultActivityType;
+  final String _selectedType = DashboardConstants.defaultActivityType;
 
   @override
   Widget build(BuildContext context) {
