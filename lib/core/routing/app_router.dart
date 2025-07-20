@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:codealpha_fitness_tracker_app/core/routing/routes.dart';
+import 'package:codealpha_fitness_tracker_app/core/utils/di.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,7 +48,7 @@ class AppRouter {
       case Routes.activityLogList:
         screen = BlocProvider(
           create: (_) => ActivityLogListCubit(
-            linkRepository: SQLiteActivityLogGoalLinkRepository(),
+            linkRepository: getIt<ActivityLogGoalLinkRepository>(),
           )..loadActivities(),
           child: ActivityLogListScreen(),
         );
