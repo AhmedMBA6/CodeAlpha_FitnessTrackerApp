@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/dashboard_aggregator.dart';
-import '../../../../core/constants/dashboard_constants.dart';
+import 'package:codealpha_fitness_tracker_app/shared/widgets/summary_card.dart';
 
 class DashboardSummaryRow extends StatelessWidget {
   final DashboardSummary today;
@@ -22,20 +22,32 @@ class DashboardSummaryRow extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _SummaryCard(
-                label: 'Calories Burned',
-                value: today.totalCalories.toStringAsFixed(0),
-                icon: Icons.local_fire_department,
-                color: Colors.orange,
+              child: Tooltip(
+                message: 'Calories burned today',
+                child: Semantics(
+                  label: 'Calories burned today: ${today.totalCalories.toStringAsFixed(0)}',
+                  child: SummaryCard(
+                    label: 'Calories Burned',
+                    value: today.totalCalories.toStringAsFixed(0),
+                    icon: Icons.local_fire_department,
+                    color: Colors.orange,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _SummaryCard(
-                label: 'Duration (min)',
-                value: today.totalDuration.toString(),
-                icon: Icons.timer,
-                color: Colors.blue,
+              child: Tooltip(
+                message: 'Duration of activities today in minutes',
+                child: Semantics(
+                  label: 'Duration today: ${today.totalDuration} minutes',
+                  child: SummaryCard(
+                    label: 'Duration (min)',
+                    value: today.totalDuration.toString(),
+                    icon: Icons.timer,
+                    color: Colors.blue,
+                  ),
+                ),
               ),
             ),
           ],
@@ -47,20 +59,32 @@ class DashboardSummaryRow extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _SummaryCard(
-                label: 'Total Activities',
-                value: metrics.totalActivities.toString(),
-                icon: Icons.fitness_center,
-                color: Colors.green,
+              child: Tooltip(
+                message: 'Total activities logged',
+                child: Semantics(
+                  label: 'Total activities: ${metrics.totalActivities}',
+                  child: SummaryCard(
+                    label: 'Total Activities',
+                    value: metrics.totalActivities.toString(),
+                    icon: Icons.fitness_center,
+                    color: Colors.green,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _SummaryCard(
-                label: 'Avg Duration (min)',
-                value: metrics.averageDuration.toStringAsFixed(0),
-                icon: Icons.av_timer,
-                color: Colors.purple,
+              child: Tooltip(
+                message: 'Average duration per activity in minutes',
+                child: Semantics(
+                  label: 'Average duration per activity: ${metrics.averageDuration.toStringAsFixed(0)} minutes',
+                  child: SummaryCard(
+                    label: 'Avg Duration (min)',
+                    value: metrics.averageDuration.toStringAsFixed(0),
+                    icon: Icons.av_timer,
+                    color: Colors.purple,
+                  ),
+                ),
               ),
             ),
           ],
@@ -69,69 +93,37 @@ class DashboardSummaryRow extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _SummaryCard(
-                label: 'Total Calories',
-                value: metrics.totalCalories.toStringAsFixed(0),
-                icon: Icons.local_fire_department,
-                color: Colors.red,
+              child: Tooltip(
+                message: 'Total calories burned',
+                child: Semantics(
+                  label: 'Total calories burned: ${metrics.totalCalories.toStringAsFixed(0)}',
+                  child: SummaryCard(
+                    label: 'Total Calories',
+                    value: metrics.totalCalories.toStringAsFixed(0),
+                    icon: Icons.local_fire_department,
+                    color: Colors.red,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _SummaryCard(
-                label: 'Avg Calories/Activity',
-                value: metrics.averageCaloriesPerActivity.toStringAsFixed(0),
-                icon: Icons.trending_up,
-                color: Colors.teal,
+              child: Tooltip(
+                message: 'Average calories burned per activity',
+                child: Semantics(
+                  label: 'Average calories per activity: ${metrics.averageCaloriesPerActivity.toStringAsFixed(0)}',
+                  child: SummaryCard(
+                    label: 'Avg Calories/Activity',
+                    value: metrics.averageCaloriesPerActivity.toStringAsFixed(0),
+                    icon: Icons.trending_up,
+                    color: Colors.teal,
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ],
-    );
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  
-  const _SummaryCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: DashboardConstants.cardElevation,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: DashboardConstants.iconSize),
-            const SizedBox(height: 6),
-            Text(
-              value, 
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label, 
-              style: const TextStyle(fontSize: 10), 
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
     );
   }
 } 

@@ -93,7 +93,13 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Date Range', style: TextStyle(fontWeight: FontWeight.bold)),
+                Tooltip(
+                  message: 'Date Range Filter',
+                  child: Semantics(
+                    label: 'Date Range Filter',
+                    child: const Text('Date Range', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
                 Row(
                   children: [
                     if (_isUpdating) ...[
@@ -104,10 +110,17 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: _isUpdating ? null : widget.onReset,
-                      tooltip: 'Reset filters',
+                    Tooltip(
+                      message: 'Reset all filters',
+                      child: Semantics(
+                        label: 'Reset all filters',
+                        button: true,
+                        child: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: _isUpdating ? null : widget.onReset,
+                          tooltip: 'Reset filters',
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -119,26 +132,41 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
               runSpacing: 8,
               children: _presets.keys.map((preset) {
                 final isSelected = _selectedPreset == preset;
-                return FilterChip(
-                  label: Text(preset),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected && !_isUpdating) {
-                      _selectPreset(preset);
-                    }
-                  },
-                  selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                  disabledColor: Colors.grey.withOpacity(0.3),
+                return Tooltip(
+                  message: 'Select $preset date range',
+                  child: Semantics(
+                    label: isSelected ? '$preset date range selected' : 'Select $preset date range',
+                    button: true,
+                    selected: isSelected,
+                    child: FilterChip(
+                      label: Text(preset),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected && !_isUpdating) {
+                          _selectPreset(preset);
+                        }
+                      },
+                      selectedColor: Theme.of(context).primaryColor.withAlpha((255 * 0.2).toInt()),
+                      disabledColor: Colors.grey.withAlpha((255 * 0.3).toInt()),
+                    ),
+                  ),
                 );
               }).toList(),
             ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _isUpdating ? null : _selectCustomDateRange,
-                icon: const Icon(Icons.calendar_today),
-                label: const Text('Custom Date Range'),
+              child: Tooltip(
+                message: 'Select a custom date range',
+                child: Semantics(
+                  label: 'Select a custom date range',
+                  button: true,
+                  child: OutlinedButton.icon(
+                    onPressed: _isUpdating ? null : _selectCustomDateRange,
+                    icon: const Icon(Icons.calendar_today),
+                    label: const Text('Custom Date Range'),
+                  ),
+                ),
               ),
             ),
             if (widget.startDate != null || widget.endDate != null) ...[

@@ -1,381 +1,363 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart';
 import 'package:codealpha_fitness_tracker_app/features/dashboard/data/dashboard_filter_service.dart';
-import '../helpers/test_helpers.dart';
 
 void main() {
-  group('DashboardFilterService', () {
-    group('filterByActivityType', () {
-      test('should return all logs when activity type is "All"', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
-
-        // Act
-        final result = DashboardFilterService.filterByActivityType(logs, 'All');
-
-        // Assert
-        expect(result.length, equals(logs.length));
-        expect(result, equals(logs));
-      });
-
-      test('should filter logs by specific activity type', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
-
-        // Act
-        final result = DashboardFilterService.filterByActivityType(logs, 'Running');
-
-        // Assert
-        expect(result.length, equals(2));
-        expect(result.every((log) => log.activityType == 'Running'), isTrue);
-      });
-
-      test('should return empty list when no activities match type', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
-
-        // Act
-        final result = DashboardFilterService.filterByActivityType(logs, 'Swimming');
-
-        // Assert
-        expect(result.length, equals(0));
-      });
-
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardFilterService.filterByActivityType([], 'Running');
-
-        // Assert
-        expect(result.length, equals(0));
-      });
-    });
-
-    group('filterByDateRange', () {
-      test('should return all logs when no date range specified', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
-
-        // Act
-        final result = DashboardFilterService.filterByDateRange(logs, null, null);
-
-        // Assert
-        expect(result.length, equals(logs.length));
-        expect(result, equals(logs));
-      });
-
-      test('should filter logs by start date', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: now.subtract(const Duration(days: 5)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            date: now.subtract(const Duration(days: 3)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-        ];
-
-        // Act
-        final result = DashboardFilterService.filterByDateRange(
-          logs,
-          now.subtract(const Duration(days: 4)),
-          null,
-        );
-
-        // Assert
-        expect(result.length, equals(2));
-        expect(result.every((log) => log.date.isAfter(now.subtract(const Duration(days: 5)))), isTrue);
-      });
-
-      test('should filter logs by end date', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: now.subtract(const Duration(days: 5)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            date: now.subtract(const Duration(days: 3)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-        ];
-
-        // Act
-        final result = DashboardFilterService.filterByDateRange(
-          logs,
-          null,
-          now.subtract(const Duration(days: 2)),
-        );
-
-        // Assert
-        expect(result.length, equals(2));
-        expect(result.every((log) => log.date.isBefore(now.subtract(const Duration(days: 1)))), isTrue);
-      });
-
-      test('should filter logs by both start and end date', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: now.subtract(const Duration(days: 5)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            date: now.subtract(const Duration(days: 3)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-        ];
-
-        // Act
-        final result = DashboardFilterService.filterByDateRange(
-          logs,
-          now.subtract(const Duration(days: 4)),
-          now.subtract(const Duration(days: 2)),
-        );
-
-        // Assert
-        expect(result.length, equals(1));
-        expect(result.first.id, equals(2));
-      });
-
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardFilterService.filterByDateRange([], DateTime.now(), DateTime.now());
-
-        // Assert
-        expect(result.length, equals(0));
-      });
-    });
-
-    group('applyFilters', () {
-      test('should apply activity type filter only', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
-
-        // Act
-        final result = DashboardFilterService.applyFilters(
-          logs: logs,
+  group('DashboardFilterService Tests', () {
+    test('should filter by activity type correctly', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
           activityType: 'Running',
-        );
-
-        // Assert
-        expect(result.length, equals(2));
-        expect(result.every((log) => log.activityType == 'Running'), isTrue);
-      });
-
-      test('should apply date range filter only', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: now.subtract(const Duration(days: 5)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            date: now.subtract(const Duration(days: 3)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-        ];
-
-        // Act
-        final result = DashboardFilterService.applyFilters(
-          logs: logs,
-          startDate: now.subtract(const Duration(days: 4)),
-          endDate: now.subtract(const Duration(days: 2)),
-        );
-
-        // Assert
-        expect(result.length, equals(1));
-        expect(result.first.id, equals(2));
-      });
-
-      test('should apply both activity type and date range filters', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Running',
-            date: now.subtract(const Duration(days: 5)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            activityType: 'Running',
-            date: now.subtract(const Duration(days: 3)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            activityType: 'Cycling',
-            date: now.subtract(const Duration(days: 3)),
-          ),
-        ];
-
-        // Act
-        final result = DashboardFilterService.applyFilters(
-          logs: logs,
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '3',
           activityType: 'Running',
-          startDate: now.subtract(const Duration(days: 4)),
-          endDate: now.subtract(const Duration(days: 2)),
-        );
+          duration: 25,
+          calories: 125.0,
+          date: DateTime.now(),
+        ),
+      ];
 
-        // Assert
-        expect(result.length, equals(1));
-        expect(result.first.id, equals(2));
-        expect(result.first.activityType, equals('Running'));
-      });
+      final runningLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        activityType: 'Running',
+      );
 
-      test('should return all logs when no filters applied', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
-
-        // Act
-        final result = DashboardFilterService.applyFilters(logs: logs);
-
-        // Assert
-        expect(result.length, equals(logs.length));
-        expect(result, equals(logs));
-      });
-
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardFilterService.applyFilters(logs: []);
-
-        // Assert
-        expect(result.length, equals(0));
-      });
+      expect(runningLogs.length, equals(2));
+      expect(runningLogs.every((log) => log.activityType == 'Running'), isTrue);
     });
 
-    group('getTodayLogs', () {
-      test('should return only today\'s logs', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: now,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            date: now,
-          ),
-        ];
+    test('should filter by date range correctly', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final twoDaysAgo = today.subtract(const Duration(days: 2));
 
-        // Act
-        final result = DashboardFilterService.getTodayLogs(logs);
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: yesterday,
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Walking',
+          duration: 20,
+          calories: 80.0,
+          date: twoDaysAgo,
+        ),
+      ];
 
-        // Assert
-        expect(result.length, equals(2));
-        expect(result.every((log) => 
-          log.date.day == now.day && 
-          log.date.month == now.month && 
-          log.date.year == now.year
-        ), isTrue);
-      });
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        startDate: yesterday,
+        endDate: today,
+      );
 
-      test('should return empty list when no activities today', () {
-        // Arrange
-        final yesterday = DateTime.now().subtract(const Duration(days: 1));
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: yesterday,
-          ),
-        ];
-
-        // Act
-        final result = DashboardFilterService.getTodayLogs(logs);
-
-        // Assert
-        expect(result.length, equals(0));
-      });
-
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardFilterService.getTodayLogs([]);
-
-        // Assert
-        expect(result.length, equals(0));
-      });
+      expect(filteredLogs.length, equals(2));
+      expect(filteredLogs.any((log) => log.date == today), isTrue);
+      expect(filteredLogs.any((log) => log.date == yesterday), isTrue);
+      expect(filteredLogs.any((log) => log.date == twoDaysAgo), isFalse);
     });
 
-    group('getLogsForDay', () {
-      test('should return logs for specific day', () {
-        // Arrange
-        final targetDate = DateTime.now().subtract(const Duration(days: 2));
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: targetDate,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            date: targetDate,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            date: targetDate.subtract(const Duration(days: 1)),
-          ),
-        ];
+    test('should filter by both activity type and date range', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
 
-        // Act
-        final result = DashboardFilterService.getLogsForDay(logs, targetDate);
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Running',
+          duration: 25,
+          calories: 125.0,
+          date: yesterday,
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: today,
+        ),
+      ];
 
-        // Assert
-        expect(result.length, equals(2));
-        expect(result.every((log) => 
-          log.date.day == targetDate.day && 
-          log.date.month == targetDate.month && 
-          log.date.year == targetDate.year
-        ), isTrue);
-      });
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        activityType: 'Running',
+        startDate: yesterday,
+        endDate: today,
+      );
 
-      test('should return empty list when no activities on target day', () {
-        // Arrange
-        final targetDate = DateTime.now().subtract(const Duration(days: 2));
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            date: targetDate.subtract(const Duration(days: 1)),
-          ),
-        ];
+      expect(filteredLogs.length, equals(2));
+      expect(filteredLogs.every((log) => log.activityType == 'Running'), isTrue);
+      expect(filteredLogs.any((log) => log.date == today), isTrue);
+      expect(filteredLogs.any((log) => log.date == yesterday), isTrue);
+    });
 
-        // Act
-        final result = DashboardFilterService.getLogsForDay(logs, targetDate);
+    test('should return all logs when no filters applied', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
+      ];
 
-        // Assert
-        expect(result.length, equals(0));
-      });
+      final filteredLogs = DashboardFilterService.applyFilters(logs: logs);
 
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardFilterService.getLogsForDay([], DateTime.now());
+      expect(filteredLogs.length, equals(2));
+      expect(filteredLogs, equals(logs));
+    });
 
-        // Assert
-        expect(result.length, equals(0));
-      });
+    test('should handle empty logs list', () {
+      final logs = <ActivityLogModel>[];
+
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        activityType: 'Running',
+      );
+
+      expect(filteredLogs, isEmpty);
+    });
+
+    test('should handle invalid activity type', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+      ];
+
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        activityType: 'InvalidType',
+      );
+
+      expect(filteredLogs, isEmpty);
+    });
+
+    test('should handle start date only', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: yesterday,
+        ),
+      ];
+
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        startDate: today,
+      );
+
+      expect(filteredLogs.length, equals(1));
+      expect(filteredLogs.first.date, equals(today));
+    });
+
+    test('should handle end date only', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: yesterday,
+        ),
+      ];
+
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        endDate: yesterday,
+      );
+
+      expect(filteredLogs.length, equals(1));
+      expect(filteredLogs.first.date, equals(yesterday));
+    });
+
+    test('should handle invalid date range (start after end)', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+      ];
+
+      final filteredLogs = DashboardFilterService.applyFilters(
+        logs: logs,
+        startDate: today,
+        endDate: yesterday,
+      );
+
+      expect(filteredLogs, isEmpty);
+    });
+
+    test('should get today logs correctly', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: yesterday,
+        ),
+      ];
+
+      final todayLogs = DashboardFilterService.getTodayLogs(logs);
+
+      expect(todayLogs.length, equals(1));
+      expect(todayLogs.first.date, equals(today));
+    });
+
+    test('should get logs for specific date correctly', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: yesterday,
+        ),
+      ];
+
+      final yesterdayLogs = DashboardFilterService.getLogsForDay(logs, yesterday);
+
+      expect(yesterdayLogs.length, equals(1));
+      expect(yesterdayLogs.first.date, equals(yesterday));
+    });
+
+    test('should get logs for date range correctly', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final twoDaysAgo = today.subtract(const Duration(days: 2));
+
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: yesterday,
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Walking',
+          duration: 20,
+          calories: 80.0,
+          date: twoDaysAgo,
+        ),
+      ];
+
+      final rangeLogs = DashboardFilterService.filterByDateRange(
+        logs,
+        twoDaysAgo,
+        yesterday,
+      );
+
+      expect(rangeLogs.length, equals(2));
+      expect(rangeLogs.any((log) => log.date == yesterday), isTrue);
+      expect(rangeLogs.any((log) => log.date == twoDaysAgo), isTrue);
+      expect(rangeLogs.any((log) => log.date == today), isFalse);
     });
   });
 } 

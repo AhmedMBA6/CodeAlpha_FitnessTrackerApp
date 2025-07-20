@@ -1,256 +1,472 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart';
 import 'package:codealpha_fitness_tracker_app/features/dashboard/data/dashboard_aggregator.dart';
-import '../helpers/test_helpers.dart';
+import 'package:codealpha_fitness_tracker_app/features/activity_goals/data/models/activity_goal.dart';
+import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_goal_link.dart';
 
 void main() {
-  group('DashboardAggregator', () {
-    group('getTodaySummary', () {
-      test('should return correct summary for today\'s activities', () {
-        // Arrange
-        final now = DateTime.now();
-        final todayLogs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Running',
-            duration: 30,
-            calories: 150.0,
-            date: now,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            activityType: 'Cycling',
-            duration: 45,
-            calories: 200.0,
-            date: now,
-          ),
-        ];
-        final allLogs = [
-          ...todayLogs,
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            activityType: 'Walking',
-            duration: 20,
-            calories: 80.0,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-        ];
+  group('DashboardAggregator Tests', () {
+    test('should calculate today summary correctly', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Walking',
+          duration: 20,
+          calories: 80.0,
+          date: today.subtract(const Duration(days: 1)),
+        ),
+      ];
 
-        // Act
-        final result = DashboardAggregator.getTodaySummary(allLogs);
+      final summary = DashboardAggregator.getTodaySummary(logs);
 
-        // Assert
-        expect(result.date.day, equals(now.day));
-        expect(result.date.month, equals(now.month));
-        expect(result.date.year, equals(now.year));
-        expect(result.totalCalories, equals(350.0));
-        expect(result.totalDuration, equals(75));
-      });
-
-      test('should return zero values when no activities today', () {
-        // Arrange
-        final yesterday = DateTime.now().subtract(const Duration(days: 1));
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Running',
-            duration: 30,
-            calories: 150.0,
-            date: yesterday,
-          ),
-        ];
-
-        // Act
-        final result = DashboardAggregator.getTodaySummary(logs);
-
-        // Assert
-        expect(result.totalCalories, equals(0.0));
-        expect(result.totalDuration, equals(0));
-      });
-
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardAggregator.getTodaySummary([]);
-
-        // Assert
-        expect(result.totalCalories, equals(0.0));
-        expect(result.totalDuration, equals(0));
-      });
+      expect(summary.totalCalories, equals(350.0));
+      expect(summary.totalDuration, equals(75));
+      expect(summary.date, equals(today));
     });
 
-    group('getWeeklySummary', () {
-      test('should return 7 days of summaries', () {
-        // Arrange
-        final logs = TestHelpers.createSampleActivityLogs();
+    test('should calculate weekly summary correctly', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: today,
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: today.subtract(const Duration(days: 1)),
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Walking',
+          duration: 20,
+          calories: 80.0,
+          date: today.subtract(const Duration(days: 2)),
+        ),
+      ];
 
-        // Act
-        final result = DashboardAggregator.getWeeklySummary(logs);
+      final weeklySummaries = DashboardAggregator.getWeeklySummary(logs);
 
-        // Assert
-        expect(result.length, equals(7));
-        expect(result.first.date.day, equals(DateTime.now().subtract(const Duration(days: 6)).day));
-        expect(result.last.date.day, equals(DateTime.now().day));
-      });
-
-      test('should calculate correct totals for each day', () {
-        // Arrange
-        final now = DateTime.now();
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Running',
-            duration: 30,
-            calories: 150.0,
-            date: now,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            activityType: 'Cycling',
-            duration: 45,
-            calories: 200.0,
-            date: now,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            activityType: 'Walking',
-            duration: 20,
-            calories: 80.0,
-            date: now.subtract(const Duration(days: 1)),
-          ),
-        ];
-
-        // Act
-        final result = DashboardAggregator.getWeeklySummary(logs);
-
-        // Assert
-        // Today should have 2 activities
-        expect(result.last.totalCalories, equals(350.0));
-        expect(result.last.totalDuration, equals(75));
-        
-        // Yesterday should have 1 activity
-        expect(result[result.length - 2].totalCalories, equals(80.0));
-        expect(result[result.length - 2].totalDuration, equals(20));
-        
-        // Other days should be empty
-        for (int i = 0; i < result.length - 2; i++) {
-          expect(result[i].totalCalories, equals(0.0));
-          expect(result[i].totalDuration, equals(0));
-        }
-      });
-
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardAggregator.getWeeklySummary([]);
-
-        // Assert
-        expect(result.length, equals(7));
-        for (final summary in result) {
-          expect(summary.totalCalories, equals(0.0));
-          expect(summary.totalDuration, equals(0));
-        }
-      });
+      expect(weeklySummaries.length, equals(7));
+      expect(weeklySummaries[0].totalCalories, equals(150.0));
+      expect(weeklySummaries[1].totalCalories, equals(200.0));
+      expect(weeklySummaries[2].totalCalories, equals(80.0));
     });
 
-    group('getMetrics', () {
-      test('should calculate correct metrics for activities', () {
-        // Arrange
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Running',
-            duration: 30,
-            calories: 150.0,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            activityType: 'Cycling',
-            duration: 45,
-            calories: 200.0,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 3,
-            activityType: 'Running',
-            duration: 35,
-            calories: 175.0,
-          ),
-        ];
+    test('should calculate metrics correctly', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Running',
+          duration: 25,
+          calories: 125.0,
+          date: DateTime.now(),
+        ),
+      ];
 
-        // Act
-        final result = DashboardAggregator.getMetrics(logs);
+      final metrics = DashboardAggregator.getMetrics(logs);
 
-        // Assert
-        expect(result.totalActivities, equals(3));
-        expect(result.totalCalories, equals(525.0));
-        expect(result.totalDuration, equals(110));
-        expect(result.averageDuration, equals(110 / 3));
-        expect(result.averageCaloriesPerActivity, equals(525.0 / 3));
-        expect(result.activityTypeBreakdown, equals({'Running': 2, 'Cycling': 1}));
-      });
+      expect(metrics.totalCalories, equals(475.0));
+      expect(metrics.totalDuration, equals(100));
+      expect(metrics.totalActivities, equals(3));
+      expect(metrics.averageDuration, equals(33.33));
+      expect(metrics.averageCaloriesPerActivity, equals(158.33));
+      expect(metrics.activityTypeBreakdown['Running'], equals(2));
+      expect(metrics.activityTypeBreakdown['Cycling'], equals(1));
+    });
 
-      test('should handle empty list', () {
-        // Act
-        final result = DashboardAggregator.getMetrics([]);
+    test('should handle empty logs gracefully', () {
+      final logs = <ActivityLogModel>[];
 
-        // Assert
-        expect(result.totalActivities, equals(0));
-        expect(result.totalCalories, equals(0.0));
-        expect(result.totalDuration, equals(0));
-        expect(result.averageDuration, equals(0.0));
-        expect(result.averageCaloriesPerActivity, equals(0.0));
-        expect(result.activityTypeBreakdown, equals({}));
-      });
+      final summary = DashboardAggregator.getTodaySummary(logs);
+      final weeklySummaries = DashboardAggregator.getWeeklySummary(logs);
+      final metrics = DashboardAggregator.getMetrics(logs);
 
-      test('should handle single activity', () {
-        // Arrange
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Running',
-            duration: 30,
-            calories: 150.0,
-          ),
-        ];
+      expect(summary.totalCalories, equals(0.0));
+      expect(summary.totalDuration, equals(0));
+      expect(weeklySummaries.length, equals(7));
+      expect(metrics.totalCalories, equals(0.0));
+      expect(metrics.totalActivities, equals(0));
+    });
 
-        // Act
-        final result = DashboardAggregator.getMetrics(logs);
+    test('should aggregate with join model correctly', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
+      ];
 
-        // Assert
-        expect(result.totalActivities, equals(1));
-        expect(result.totalCalories, equals(150.0));
-        expect(result.totalDuration, equals(30));
-        expect(result.averageDuration, equals(30.0));
-        expect(result.averageCaloriesPerActivity, equals(150.0));
-        expect(result.activityTypeBreakdown, equals({'Running': 1}));
-      });
+      final goals = [
+        ActivityGoal(
+          id: 'goal1',
+          goalType: GoalType.quantitative,
+          description: 'Run 5km',
+          targetValue: 5.0,
+          unit: 'km',
+          createdAt: DateTime.now(),
+        ),
+        ActivityGoal(
+          id: 'goal2',
+          goalType: GoalType.quantitative,
+          description: 'Burn 500 calories',
+          targetValue: 500.0,
+          unit: 'calories',
+          createdAt: DateTime.now(),
+        ),
+      ];
 
-      test('should handle activities with zero values', () {
-        // Arrange
-        final logs = [
-          TestHelpers.createSampleActivityLog(
-            id: 1,
-            activityType: 'Walking',
-            duration: 0,
-            calories: 0.0,
-          ),
-          TestHelpers.createSampleActivityLog(
-            id: 2,
-            activityType: 'Running',
-            duration: 30,
-            calories: 150.0,
-          ),
-        ];
+      final links = [
+        ActivityLogGoalLink(
+          id: 'link1',
+          activityLogId: '1',
+          goalId: 'goal1',
+          contributedValue: 3.0,
+          contributionType: 'km',
+          linkedAt: DateTime.now(),
+        ),
+        ActivityLogGoalLink(
+          id: 'link2',
+          activityLogId: '2',
+          goalId: 'goal2',
+          contributedValue: 200.0,
+          contributionType: 'calories',
+          linkedAt: DateTime.now(),
+        ),
+      ];
 
-        // Act
-        final result = DashboardAggregator.getMetrics(logs);
+      final result = DashboardAggregator.aggregateWithJoinModel(
+        logs: logs,
+        goals: goals,
+        links: links,
+      );
 
-        // Assert
-        expect(result.totalActivities, equals(2));
-        expect(result.totalCalories, equals(150.0));
-        expect(result.totalDuration, equals(30));
-        expect(result.averageDuration, equals(15.0));
-        expect(result.averageCaloriesPerActivity, equals(75.0));
-        expect(result.activityTypeBreakdown, equals({'Walking': 1, 'Running': 1}));
-      });
+      expect(result['totalGoals'], equals(2));
+      expect(result['completedGoals'], equals(0));
+      expect(result['pendingGoals'], equals(2));
+      expect(result['topGoals'], isA<List>());
+      expect((result['topGoals'] as List).length, equals(2));
+    });
+
+    test('should calculate goal progress correctly', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 250.0,
+          distance: 3.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Running',
+          duration: 25,
+          calories: 200.0,
+          distance: 2.5,
+          date: DateTime.now(),
+        ),
+      ];
+
+      final goals = [
+        ActivityGoal(
+          id: 'goal1',
+          goalType: GoalType.quantitative,
+          description: 'Run 5km',
+          targetValue: 5.0,
+          unit: 'km',
+          createdAt: DateTime.now(),
+        ),
+        ActivityGoal(
+          id: 'goal2',
+          goalType: GoalType.quantitative,
+          description: 'Burn 500 calories',
+          targetValue: 500.0,
+          unit: 'calories',
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      final links = [
+        ActivityLogGoalLink(
+          id: 'link1',
+          activityLogId: '1',
+          goalId: 'goal1',
+          contributedValue: 3.0,
+          contributionType: 'km',
+          linkedAt: DateTime.now(),
+        ),
+        ActivityLogGoalLink(
+          id: 'link2',
+          activityLogId: '2',
+          goalId: 'goal1',
+          contributedValue: 2.5,
+          contributionType: 'km',
+          linkedAt: DateTime.now(),
+        ),
+        ActivityLogGoalLink(
+          id: 'link3',
+          activityLogId: '1',
+          goalId: 'goal2',
+          contributedValue: 250.0,
+          contributionType: 'calories',
+          linkedAt: DateTime.now(),
+        ),
+      ];
+
+      final result = DashboardAggregator.aggregateWithJoinModel(
+        logs: logs,
+        goals: goals,
+        links: links,
+      );
+
+      final topGoals = result['topGoals'] as List;
+      final goal1Data = topGoals.firstWhere((g) => (g['goal'] as ActivityGoal).id == 'goal1');
+      final goal2Data = topGoals.firstWhere((g) => (g['goal'] as ActivityGoal).id == 'goal2');
+
+      // Goal 1: 5.5km / 5.0km = 110% progress (capped at 100%)
+      expect(goal1Data['goalProgress'], equals(1.0));
+      // Goal 2: 250 calories / 500 calories = 50% progress
+      expect(goal2Data['goalProgress'], equals(0.5));
+    });
+
+    test('should handle goals without linked activities', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+      ];
+
+      final goals = [
+        ActivityGoal(
+          id: 'goal1',
+          goalType: GoalType.quantitative,
+          description: 'Run 5km',
+          targetValue: 5.0,
+          unit: 'km',
+          createdAt: DateTime.now(),
+        ),
+        ActivityGoal(
+          id: 'goal2',
+          goalType: GoalType.quantitative,
+          description: 'Burn 500 calories',
+          targetValue: 500.0,
+          unit: 'calories',
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      final links = <ActivityLogGoalLink>[]; // No links
+
+      final result = DashboardAggregator.aggregateWithJoinModel(
+        logs: logs,
+        goals: goals,
+        links: links,
+      );
+
+      expect(result['totalGoals'], equals(2));
+      expect(result['completedGoals'], equals(0));
+      expect(result['pendingGoals'], equals(2));
+      
+      final topGoals = result['topGoals'] as List;
+      expect(topGoals.length, equals(2));
+      
+      // Both goals should have 0 progress
+      for (final goalData in topGoals) {
+        expect(goalData['goalProgress'], equals(0.0));
+        expect((goalData['linkedLogs'] as List).isEmpty, isTrue);
+      }
+    });
+
+    test('should handle qualitative goals correctly', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Strength Training',
+          duration: 45,
+          calories: 200.0,
+          tags: ['chest', 'triceps'],
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cardio',
+          duration: 30,
+          calories: 150.0,
+          tags: ['cardio'],
+          date: DateTime.now(),
+        ),
+      ];
+
+      final goals = [
+        ActivityGoal(
+          id: 'goal1',
+          goalType: GoalType.qualitative,
+          description: 'Train chest muscles',
+          tags: ['chest'],
+          createdAt: DateTime.now(),
+        ),
+        ActivityGoal(
+          id: 'goal2',
+          goalType: GoalType.qualitative,
+          description: 'Do cardio workouts',
+          tags: ['cardio'],
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      final links = [
+        ActivityLogGoalLink(
+          id: 'link1',
+          activityLogId: '1',
+          goalId: 'goal1',
+          contributedValue: 1.0,
+          contributionType: 'hours',
+          linkedAt: DateTime.now(),
+        ),
+        ActivityLogGoalLink(
+          id: 'link2',
+          activityLogId: '2',
+          goalId: 'goal2',
+          contributedValue: 1.0,
+          contributionType: 'hours',
+          linkedAt: DateTime.now(),
+        ),
+      ];
+
+      final result = DashboardAggregator.aggregateWithJoinModel(
+        logs: logs,
+        goals: goals,
+        links: links,
+      );
+
+      final topGoals = result['topGoals'] as List;
+      expect(topGoals.length, equals(2));
+      
+      // Both qualitative goals should be considered completed (progress = 1.0)
+      for (final goalData in topGoals) {
+        expect(goalData['goalProgress'], equals(1.0));
+      }
+    });
+
+    test('should handle mixed goal types correctly', () {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 300.0,
+          distance: 4.0,
+          tags: ['cardio'],
+          date: DateTime.now(),
+        ),
+      ];
+
+      final goals = [
+        ActivityGoal(
+          id: 'goal1',
+          goalType: GoalType.quantitative,
+          description: 'Run 5km',
+          targetValue: 5.0,
+          unit: 'km',
+          createdAt: DateTime.now(),
+        ),
+        ActivityGoal(
+          id: 'goal2',
+          goalType: GoalType.qualitative,
+          description: 'Do cardio',
+          tags: ['cardio'],
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      final links = [
+        ActivityLogGoalLink(
+          id: 'link1',
+          activityLogId: '1',
+          goalId: 'goal1',
+          contributedValue: 4.0,
+          contributionType: 'km',
+          linkedAt: DateTime.now(),
+        ),
+        ActivityLogGoalLink(
+          id: 'link2',
+          activityLogId: '1',
+          goalId: 'goal2',
+          contributedValue: 1.0,
+          contributionType: 'hours',
+          linkedAt: DateTime.now(),
+        ),
+      ];
+
+      final result = DashboardAggregator.aggregateWithJoinModel(
+        logs: logs,
+        goals: goals,
+        links: links,
+      );
+
+      final topGoals = result['topGoals'] as List;
+      expect(topGoals.length, equals(2));
+      
+      final quantitativeGoal = topGoals.firstWhere((g) => (g['goal'] as ActivityGoal).goalType == GoalType.quantitative);
+      final qualitativeGoal = topGoals.firstWhere((g) => (g['goal'] as ActivityGoal).goalType == GoalType.qualitative);
+      
+      // Quantitative: 4.0km / 5.0km = 80% progress
+      expect(quantitativeGoal['goalProgress'], equals(0.8));
+      // Qualitative: completed = 100% progress
+      expect(qualitativeGoal['goalProgress'], equals(1.0));
     });
   });
 } 

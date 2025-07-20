@@ -10,61 +10,81 @@ class WeeklyChart extends StatelessWidget {
     return Container(
       height: 220,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: _getMaxY(),
-          barTouchData: BarTouchData(
-            enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              tooltipBgColor: Colors.black87,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                final summary = weeklySummaries[group.x.toInt()];
-                return BarTooltipItem(
-                  '${_weekdayLabel(summary.date)}\n'
-                  '${rod.toY.toStringAsFixed(0)} cal',
-                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                );
-              },
-            ),
-          ),
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 32),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  final index = value.toInt();
-                  if (index < 0 || index >= weeklySummaries.length) return const SizedBox.shrink();
-                  final date = weeklySummaries[index].date;
-                  return Text(_weekdayLabel(date));
+      child: Tooltip(
+        message: 'Weekly calories burned bar chart',
+        child: Semantics(
+          label: 'Weekly calories burned bar chart',
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              maxY: _getMaxY(),
+              barTouchData: BarTouchData(
+                enabled: true,
+                touchCallback: (event, response) {
+                  if (event.isInterestedForInteractions && response != null && response.spot != null) {
+                    final index = response.spot!.touchedBarGroupIndex;
+                    final summary = weeklySummaries[index];
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text('Day: ${_weekdayLabel(summary.date)}'),
+                        content: Text('Calories burned: ${summary.totalCalories.toStringAsFixed(0)}'),
+                        actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close'))],
+                      ),
+                    );
+                  }
                 },
-              ),
-            ),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          borderData: FlBorderData(show: false),
-          barGroups: List.generate(weeklySummaries.length, (i) {
-            final summary = weeklySummaries[i];
-            final isToday = summary.date.day == DateTime.now().day &&
-                            summary.date.month == DateTime.now().month &&
-                            summary.date.year == DateTime.now().year;
-            return BarChartGroupData(
-              x: i,
-              barRods: [
-                BarChartRodData(
-                  toY: summary.totalCalories,
-                  color: isToday ? Colors.green : Colors.orange,
-                  width: 18,
-                  borderRadius: BorderRadius.circular(4),
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipColor: (group) => Colors.black87,
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    final summary = weeklySummaries[group.x.toInt()];
+                    return BarTooltipItem(
+                      '${_weekdayLabel(summary.date)}\n'
+                      '${rod.toY.toStringAsFixed(0)} cal',
+                      const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    );
+                  },
                 ),
-              ],
-              showingTooltipIndicators: [0],
-            );
-          }),
+              ),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: true, reservedSize: 32),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index < 0 || index >= weeklySummaries.length) return const SizedBox.shrink();
+                      final date = weeklySummaries[index].date;
+                      return Text(_weekdayLabel(date));
+                    },
+                  ),
+                ),
+                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              borderData: FlBorderData(show: false),
+              barGroups: List.generate(weeklySummaries.length, (i) {
+                final summary = weeklySummaries[i];
+                final isToday = summary.date.day == DateTime.now().day &&
+                                summary.date.month == DateTime.now().month &&
+                                summary.date.year == DateTime.now().year;
+                return BarChartGroupData(
+                  x: i,
+                  barRods: [
+                    BarChartRodData(
+                      toY: summary.totalCalories,
+                      color: isToday ? Colors.green : Colors.orange,
+                      width: 18,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ],
+                  showingTooltipIndicators: [0],
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );

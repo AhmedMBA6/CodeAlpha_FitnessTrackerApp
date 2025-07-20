@@ -1,12 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/foundation.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/repos/activity_log_repository.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart';
 import 'package:codealpha_fitness_tracker_app/features/dashboard/logic/dashboard_cubit.dart';
 import 'package:codealpha_fitness_tracker_app/features/dashboard/data/dashboard_aggregator.dart';
-import 'package:codealpha_fitness_tracker_app/features/dashboard/data/dashboard_filter_service.dart';
 import 'package:codealpha_fitness_tracker_app/core/constants/dashboard_constants.dart';
 import '../helpers/test_helpers.dart';
 
@@ -20,7 +18,7 @@ void main() {
 
     setUp(() {
       mockRepository = MockActivityLogRepository();
-      cubit = DashboardCubit(mockRepository);
+      cubit = DashboardCubit();
     });
 
     tearDown(() {
@@ -33,7 +31,7 @@ void main() {
       final largeDataset = List.generate(1000, (index) {
         final date = DateTime.now().subtract(Duration(days: index % 30));
         return ActivityLogModel(
-          id: index + 1,
+          id: (index + 1).toString(),
           activityType: activityTypes[index % activityTypes.length],
           duration: 30 + (index % 60),
           calories: 100.0 + (index % 200),

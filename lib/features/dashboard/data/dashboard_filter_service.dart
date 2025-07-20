@@ -1,7 +1,8 @@
 import '../../activity_log/data/models/activity_log_model.dart';
 
+/// Service class providing static utility methods for filtering activity logs by type and date.
 class DashboardFilterService {
-  /// Filter activity logs by activity type
+  /// Filters activity logs by activity type. Returns all logs if 'All' is selected.
   static List<ActivityLogModel> filterByActivityType(
     List<ActivityLogModel> logs,
     String activityType,
@@ -12,7 +13,7 @@ class DashboardFilterService {
     return logs.where((log) => log.activityType == activityType).toList();
   }
 
-  /// Filter activity logs by date range
+  /// Filters activity logs by a date range (inclusive).
   static List<ActivityLogModel> filterByDateRange(
     List<ActivityLogModel> logs,
     DateTime? startDate,
@@ -39,7 +40,7 @@ class DashboardFilterService {
     return filteredLogs;
   }
 
-  /// Apply multiple filters to activity logs
+  /// Applies multiple filters (activity type and date range) to activity logs.
   static List<ActivityLogModel> applyFilters({
     required List<ActivityLogModel> logs,
     String? activityType,
@@ -61,7 +62,7 @@ class DashboardFilterService {
     return filteredLogs;
   }
 
-  /// Get filtered logs for today
+  /// Returns logs for today only.
   static List<ActivityLogModel> getTodayLogs(List<ActivityLogModel> logs) {
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
@@ -73,7 +74,7 @@ class DashboardFilterService {
     ).toList();
   }
 
-  /// Get filtered logs for a specific day
+  /// Returns logs for a specific day.
   static List<ActivityLogModel> getLogsForDay(
     List<ActivityLogModel> logs,
     DateTime day,
