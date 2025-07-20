@@ -133,7 +133,7 @@ class ActivityLogFormCubit extends Cubit<ActivityLogFormState> {
       for (final goal in state.linkedGoals) {
         await linkRepository.linkGoalToActivityLog(ActivityLogGoalLink(
           id: const Uuid().v4(),
-          activityLogId: logId.toString(),
+          activityLogId: logId,
           goalId: goal.id,
           contributedValue: state.calories ?? 0,
           contributionType: goal.unit ?? 'custom',
@@ -142,7 +142,7 @@ class ActivityLogFormCubit extends Cubit<ActivityLogFormState> {
       }
       // Check if cubit is still active before emitting success
       if (!isClosed) {
-        emit(state.copyWith(submitting: false, submitted: true, newLogId: logId, successMessage: 'Activity log saved!'));
+        emit(state.copyWith(submitting: false, submitted: true, newLogId: int.tryParse(logId), successMessage: 'Activity log saved!'));
       }
     } catch (e) {
       // Only emit error if cubit is still active

@@ -4,6 +4,9 @@ import 'package:codealpha_fitness_tracker_app/core/utils/sqlite_helper.dart';
 abstract class ActivityLogGoalLinkRepository {
   Future<void> linkGoalToActivityLog(ActivityLogGoalLink link);
   Future<void> unlinkGoalFromActivityLog(String linkId, {DateTime? unlinkedAt});
+  Future<void> deleteLink(String linkId);
+  Future<void> updateLink(Map<String, dynamic> data);
+  Future<void> deleteAllLinksForActivityLog(String activityLogId);
   Future<List<ActivityLogGoalLink>> getLinksForActivityLog(String activityLogId);
   Future<List<ActivityLogGoalLink>> getLinksForGoal(String goalId);
   Future<ActivityLogGoalLink?> getLink(String linkId);
@@ -32,9 +35,58 @@ class SQLiteActivityLogGoalLinkRepository implements ActivityLogGoalLinkReposito
   }
 
   @override
+  Future<void> deleteLink(String linkId) async {
+    await _dbHelper.deleteLink(linkId);
+  }
+
+  @override
+  Future<void> updateLink(Map<String, dynamic> data) async {
+    await _dbHelper.updateLink(data);
+  }
+
+  /// Deletes all links for a specific activity log
+  Future<void> deleteAllLinksForActivityLog(String activityLogId) async {
+    print('[LINK_REPO] deleteAllLinksForActivityLog called with activityLogId: $activityLogId');
+    
+    // Validate input
+    if (activityLogId.isEmpty) {
+      print('[LINK_REPO] Invalid activityLogId (empty)');
+      return;
+    }
+    
+    try {
+      final links = await getLinksForActivityLog(activityLogId);
+      print('[LINK_REPO] Found ${links.length} links to delete');
+      
+      if (links.isEmpty) {
+        print('[LINK_REPO] No links found for activityLogId: $activityLogId');
+        return;
+      }
+      
+      for (final link in links) {
+        try {
+          print('[LINK_REPO] Deleting link with ID: ${link.id}');
+          await _dbHelper.deleteLink(link.id);
+        } catch (e) {
+          print('[LINK_REPO] Error deleting link ${link.id}: $e');
+          // Continue with other links even if one fails
+        }
+      }
+      print('[LINK_REPO] All links deleted for activityLogId: $activityLogId');
+    } catch (e) {
+      print('[LINK_REPO] Error in deleteAllLinksForActivityLog: $e');
+      print('[LINK_REPO] Stack trace: ${StackTrace.current}');
+      throw Exception('Failed to delete links for activity: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<List<ActivityLogGoalLink>> getLinksForActivityLog(String activityLogId) async {
+    print('[LINK_REPO] getLinksForActivityLog called with activityLogId: $activityLogId');
     final maps = await _dbHelper.getLinksForActivityLog(activityLogId);
-    return maps.map((m) => ActivityLogGoalLink.fromJson(m)).toList();
+    final links = maps.map((m) => ActivityLogGoalLink.fromJson(m)).toList();
+    print('[LINK_REPO] Found ${links.length} links for activityLogId: $activityLogId');
+    return links;
   }
 
   @override

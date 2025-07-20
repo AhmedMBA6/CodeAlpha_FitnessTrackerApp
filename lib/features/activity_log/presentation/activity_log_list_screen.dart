@@ -83,67 +83,187 @@ class _ActivityLogScaffoldState extends State<_ActivityLogScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    return _ActivityLogListener(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Activity Log'),
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Activity Log'),
+        backgroundColor: theme.colorScheme.inversePrimary,
+        actions: [
+          // Add cleanup button
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) async {
+              if (value == 'cleanup') {
+                await _showCleanupDialog(context);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'cleanup',
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ChoiceChip(
-                      label: const Text('All'),
-                      selected: _filterType == LogFilterType.all,
-                      onSelected: (_) => setState(() => _filterType = LogFilterType.all),
-                      tooltip: 'Show all activity logs',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Goal-linked'),
-                      selected: _filterType == LogFilterType.goalLinked,
-                      onSelected: (_) => setState(() => _filterType = LogFilterType.goalLinked),
-                      tooltip: 'Show only logs linked to a goal',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Unlinked'),
-                      selected: _filterType == LogFilterType.unlinked,
-                      onSelected: (_) => setState(() => _filterType = LogFilterType.unlinked),
-                      tooltip: 'Show only logs not linked to a goal',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    ),
+                    Icon(Icons.cleaning_services, size: 20),
+                    SizedBox(width: 8),
+                    Text('Database Cleanup'),
                   ],
                 ),
               ),
-            ),
-            Expanded(
-              child: _ActivityLogListBody(
-                filterType: _filterType,
-                showForm: (ctx, {log}) => _showForm(ctx, log: log),
-                resetFilter: _resetFilter,
+            ],
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ChoiceChip(
+                    label: const Text('All'),
+                    selected: _filterType == LogFilterType.all,
+                    onSelected: (_) => setState(() => _filterType = LogFilterType.all),
+                    tooltip: 'Show all activity logs',
+                    labelStyle: const TextStyle(fontSize: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Goal-linked'),
+                    selected: _filterType == LogFilterType.goalLinked,
+                    onSelected: (_) => setState(() => _filterType = LogFilterType.goalLinked),
+                    tooltip: 'Show only logs linked to a goal',
+                    labelStyle: const TextStyle(fontSize: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Unlinked'),
+                    selected: _filterType == LogFilterType.unlinked,
+                    onSelected: (_) => setState(() => _filterType = LogFilterType.unlinked),
+                    tooltip: 'Show only logs not linked to a goal',
+                    labelStyle: const TextStyle(fontSize: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                ],
               ),
+            ),
+          ),
+          Expanded(
+            child: _ActivityLogListBody(
+              filterType: _filterType,
+              showForm: (ctx, {log}) => _showForm(ctx, log: log),
+              resetFilter: _resetFilter,
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showForm(context),
+        tooltip: 'Add Activity',
+        heroTag: 'add_activity_fab',
+        child: const Icon(Icons.add, semanticLabel: 'Add Activity Button'),
+      ),
+    );
+  }
+
+  /// Shows a dialog to check and run cleanup operations
+  Future<void> _showCleanupDialog(BuildContext context) async {
+    final cubit = context.read<ActivityLogListCubit>();
+    
+    // Check if cleanup is needed
+    final cleanupStatus = await cubit.checkCleanupNeeded();
+    
+    if (!context.mounted) return;
+    
+    if (cleanupStatus['needsCleanup'] == true) {
+      // Show cleanup confirmation dialog
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.cleaning_services, color: Colors.orange, size: 24),
+              SizedBox(width: 8),
+              Text('Database Cleanup'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('The following issues were found:'),
+              const SizedBox(height: 8),
+              if (cleanupStatus['nullIdActivities'] > 0)
+                Text('• ${cleanupStatus['nullIdActivities']} activities with null IDs'),
+              if (cleanupStatus['orphanedLinks'] > 0)
+                Text('• ${cleanupStatus['orphanedLinks']} orphaned goal links'),
+              if (cleanupStatus['duplicateActivities'] > 0)
+                Text('• ${cleanupStatus['duplicateActivities']} duplicate activities'),
+              const SizedBox(height: 8),
+              const Text('Would you like to fix these issues?'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.cleaning_services),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              label: const Text('Clean Up'),
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showForm(context),
-          tooltip: 'Add Activity',
-          heroTag: 'add_activity_fab',
-          child: const Icon(Icons.add, semanticLabel: 'Add Activity Button'),
-        ),
-      ),
-    );
+      );
+      
+      if (confirm == true && context.mounted) {
+        // Show loading indicator
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 16),
+                Text('Running cleanup operations...'),
+              ],
+            ),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        
+        // Run cleanup operations
+        await cubit.runCleanupOperations();
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cleanup completed successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } else {
+      // Show no cleanup needed message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No cleanup needed. Database is in good condition.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -219,8 +339,14 @@ class _ActivityLogListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('[UI] _ActivityLogListBody.build() called');
     return BlocBuilder<ActivityLogListCubit, ActivityLogState>(
       builder: (context, state) {
+        print('[UI] Current state: ${state.runtimeType}, activities count: ${state is ActivityLogSuccess ? state.activities.length : 'N/A'}');
+        if (state is ActivityLogSuccess) {
+          print('[UI] Activity IDs in state: ${state.activities.map((a) => a.id).toList()}');
+        }
+        
         if (state is ActivityLogLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is ActivityLogSuccess) {
@@ -405,8 +531,10 @@ class _ActivityLogListBody extends StatelessWidget {
                                ),
                              );
                              
+                             print('[UI] About to call deleteActivity with ID: ${log.id!}');
                              // Delete the activity
-                               await context.read<ActivityLogListCubit>().deleteActivity(log.id!);
+                             await context.read<ActivityLogListCubit>().deleteActivity(log.id!);
+                             print('[UI] deleteActivity call completed');
                                
                                // Show success message
                                if (context.mounted) {
@@ -428,13 +556,35 @@ class _ActivityLogListBody extends StatelessWidget {
                                  );
                                }
                            } catch (e) {
-                             // Show error message
+                             print('[UI] Error during activity deletion: $e');
+                             // Show error message with better formatting
                              if (context.mounted) {
+                               String errorMessage = 'Failed to delete activity.';
+                               if (e.toString().contains('not found') || e.toString().contains('No record found')) {
+                                 errorMessage = 'Activity not found. It may have already been deleted.';
+                               } else if (e.toString().contains('database')) {
+                                 errorMessage = 'Database error occurred. Please try again.';
+                               } else if (e.toString().contains('network') || e.toString().contains('connection')) {
+                                 errorMessage = 'Connection error. Please check your internet connection.';
+                               } else if (e.toString().contains('null or empty')) {
+                                 errorMessage = 'Invalid activity data. Please refresh and try again.';
+                               }
+                               
                                ScaffoldMessenger.of(context).showSnackBar(
                                  SnackBar(
-                                   content: Text('Failed to delete activity: ${e.toString()}'),
+                                   content: Text(errorMessage),
                                    backgroundColor: Colors.red,
                                    duration: const Duration(seconds: 4),
+                                   action: SnackBarAction(
+                                     label: 'Retry',
+                                     textColor: Colors.white,
+                                     onPressed: () {
+                                       // Retry the deletion
+                                       if (log.id != null && log.id!.isNotEmpty) {
+                                         context.read<ActivityLogListCubit>().deleteActivity(log.id!);
+                                       }
+                                     },
+                                   ),
                                  ),
                                );
                              }

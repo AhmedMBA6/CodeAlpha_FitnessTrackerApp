@@ -20,7 +20,11 @@ class SQLHelper {
   }
 
   Future<Database> get database async {
-    if (_db != null) return _db!;
+    if (_db != null) {
+      print('[SQLITE] Using existing database instance');
+      return _db!;
+    }
+    print('[SQLITE] Initializing new database instance');
     _db = await _initDB();
     return _db!;
   }
@@ -30,7 +34,7 @@ class SQLHelper {
     final path = join(dbPath, 'activity_tracker.db');
 
     print('[DB DEBUG] Database path: $path');
-    print('[DB DEBUG] Attempting to open database with version 5');
+    print('[DB DEBUG] Attempting to open database with version 6');
 
     return await openDatabase(
       path,
@@ -170,12 +174,78 @@ class SQLHelper {
 
   Future<List<Map<String, dynamic>>> getAllActivityLogs() async {
     final db = await database;
-    return await db.query('activity_logs', orderBy: 'startTime DESC');
+    final results = await db.query('activity_logs', orderBy: 'startTime DESC');
+    print('[SQLITE] getAllActivityLogs returned ${results.length} records');
+    for (final record in results) {
+      print('[SQLITE] Activity ID: ${record['id']}, Type: ${record['type']}, Date: ${record['date']}');
+    }
+    return results;
   }
 
   Future<int> deleteActivityLog(String id) async {
     final db = await database;
-    return await db.delete('activity_logs', where: 'id = ?', whereArgs: [id]);
+    print('[SQLITE] Attempting to delete activity log with ID: $id');
+    
+    // Validate input
+    if (id.isEmpty) {
+      print('[SQLITE] Invalid activity ID (empty)');
+      return 0;
+    }
+    
+    try {
+      // First, check if the record exists
+      final existing = await db.query('activity_logs', where: 'id = ?', whereArgs: [id]);
+      print('[SQLITE] Found ${existing.length} existing records with ID: $id');
+      
+      if (existing.isEmpty) {
+        print('[SQLITE] No record found to delete for ID: $id');
+        return 0;
+      }
+      
+      final deletedRows = await db.delete('activity_logs', where: 'id = ?', whereArgs: [id]);
+      print('[SQLITE] Successfully deleted $deletedRows rows for ID: $id');
+      
+      // Verify deletion
+      final afterDelete = await db.query('activity_logs', where: 'id = ?', whereArgs: [id]);
+      print('[SQLITE] Records remaining after deletion: ${afterDelete.length}');
+      
+      return deletedRows;
+    } catch (e) {
+      print('[SQLITE] Error deleting activity log: $e');
+      print('[SQLITE] Stack trace: ${StackTrace.current}');
+      throw Exception('Database error while deleting activity: ${e.toString()}');
+    }
+  }
+
+  /// Deletes an activity log by matching its content (for records with null IDs)
+  Future<int> deleteActivityLogByContent(Map<String, dynamic> activity) async {
+    final db = await database;
+    print('[SQLITE] Attempting to delete activity log by content: ${activity['type']}');
+    
+    // First, find the exact record to delete
+    final existing = await db.query(
+      'activity_logs',
+      where: 'type = ? AND date = ? AND duration = ? AND calories = ? AND (id IS NULL OR id = "")',
+      whereArgs: [activity['type'], activity['date'], activity['duration'], activity['calories']]
+    );
+    
+    print('[SQLITE] Found ${existing.length} records with null IDs matching content');
+    
+    if (existing.isEmpty) {
+      print('[SQLITE] No records with null IDs found to delete');
+      return 0;
+    }
+    
+    // Delete only the first matching record (to avoid deleting duplicates)
+    final recordToDelete = existing.first;
+    final deletedRows = await db.delete(
+      'activity_logs',
+      where: 'rowid = ?',
+      whereArgs: [recordToDelete['rowid']]
+    );
+    
+    print('[SQLITE] Deleted $deletedRows rows by rowid: ${recordToDelete['rowid']}');
+    return deletedRows;
   }
 
   Future<int> updateActivityLog(Map<String, dynamic> data) async {
@@ -227,7 +297,33 @@ class SQLHelper {
 
   Future<int> deleteLink(String id) async {
     final db = await database;
-    return await db.delete('activity_log_goal_link', where: 'id = ?', whereArgs: [id]);
+    print('[SQLITE] Attempting to delete link with ID: $id');
+    
+    // Validate input
+    if (id.isEmpty) {
+      print('[SQLITE] Invalid link ID (empty)');
+      return 0;
+    }
+    
+    try {
+      // First, check if the record exists
+      final existing = await db.query('activity_log_goal_link', where: 'id = ?', whereArgs: [id]);
+      print('[SQLITE] Found ${existing.length} existing link records with ID: $id');
+      
+      if (existing.isEmpty) {
+        print('[SQLITE] No link record found to delete for ID: $id');
+        return 0;
+      }
+      
+      final deletedRows = await db.delete('activity_log_goal_link', where: 'id = ?', whereArgs: [id]);
+      print('[SQLITE] Successfully deleted $deletedRows link rows for ID: $id');
+      
+      return deletedRows;
+    } catch (e) {
+      print('[SQLITE] Error deleting link: $e');
+      print('[SQLITE] Stack trace: ${StackTrace.current}');
+      throw Exception('Database error while deleting link: ${e.toString()}');
+    }
   }
 
   Future<int> updateLink(Map<String, dynamic> data) async {
@@ -270,5 +366,26 @@ class SQLHelper {
   Future<List<Map<String, dynamic>>> getGoalsByArchived(bool isArchived) async {
     final db = await database;
     return await db.query('activity_goals', where: 'isArchived = ?', whereArgs: [isArchived ? 1 : 0]);
+  }
+
+  /// Debug method to check database state
+  Future<void> debugDatabaseState() async {
+    final db = await database;
+    print('[DEBUG] === DATABASE STATE ===');
+    print('[DEBUG] Database path: ${db.path}');
+    
+    final activityLogs = await db.query('activity_logs');
+    print('[DEBUG] Activity logs count: ${activityLogs.length}');
+    for (final log in activityLogs) {
+      print('[DEBUG] Activity: ID=${log['id']}, Type=${log['type']}, Date=${log['date']}');
+    }
+    
+    final links = await db.query('activity_log_goal_link');
+    print('[DEBUG] Goal links count: ${links.length}');
+    for (final link in links) {
+      print('[DEBUG] Link: ID=${link['id']}, ActivityID=${link['activityLogId']}, GoalID=${link['goalId']}');
+    }
+    
+    print('[DEBUG] === END DATABASE STATE ===');
   }
 } 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/utils/haptic_feedback.dart';
-import '../../core/l10n/app_localizations.dart';
+import '../../core/localization/app_localizations.dart';
 
 class FeaturesSummary extends StatelessWidget {
   const FeaturesSummary({super.key});
@@ -125,7 +125,7 @@ class FeaturesSummary extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 24),
