@@ -1,12 +1,11 @@
-import 'package:codealpha_fitness_tracker_app/core/routing/routes.dart';
-import 'package:codealpha_fitness_tracker_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-import '../../data/models/user_profile_model.dart';
 import '../../logic/cubit/user_profile_cubit.dart';
+import '../../data/models/user_profile_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/routing/routes.dart';
 
+/// Form widget for completing user profile after signup.
 class CompleteProfileForm extends StatefulWidget {
   const CompleteProfileForm({super.key});
 
@@ -14,6 +13,7 @@ class CompleteProfileForm extends StatefulWidget {
   State<CompleteProfileForm> createState() => _CompleteProfileFormState();
 }
 
+/// State for [CompleteProfileForm]. Handles form logic and submission.
 class _CompleteProfileFormState extends State<CompleteProfileForm> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
@@ -46,10 +46,6 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       );
 
       context.read<UserProfileCubit>().saveProfile(profile);
-      Navigator.pushReplacementNamed(
-        context,
-        Routes.homeScreen,
-      );
     }
   }
 
@@ -58,7 +54,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     return BlocConsumer<UserProfileCubit, UserProfileState>(
       listener: (context, state) {
         if (state is UserProfileSuccess) {
-          Navigator.pushReplacementNamed(context, MyHomePage(title: "Fitness Tracker").toString());
+          Navigator.pushReplacementNamed(context, Routes.homeScreen);
         } else if (state is UserProfileError) {
           ScaffoldMessenger.of(
             context,
@@ -73,6 +69,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(labelText: 'Name'),
+                autofocus: true,
                 validator: (val) =>
                     val == null || val.isEmpty ? 'Enter your name' : null,
               ),
@@ -110,10 +107,15 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
                 value: _selectedGender,
                 decoration: const InputDecoration(labelText: 'Gender'),
                 items: ['Male', 'Female', 'Other']
-                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                    .map((gender) => DropdownMenuItem(
+                          value: gender,
+                          child: Text(gender),
+                        ))
                     .toList(),
-                onChanged: (val) {
-                  setState(() => _selectedGender = val!);
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value!;
+                  });
                 },
               ),
               const SizedBox(height: 24),
@@ -121,7 +123,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
                       onPressed: () => _submitProfile(context),
-                      child: const Text("Save & Continue"),
+                      child: const Text('Complete Profile'),
                     ),
             ],
           ),

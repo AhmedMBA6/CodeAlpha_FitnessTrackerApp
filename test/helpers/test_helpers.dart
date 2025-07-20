@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart';
 import 'package:codealpha_fitness_tracker_app/features/dashboard/data/dashboard_aggregator.dart';
@@ -7,7 +6,7 @@ import 'package:codealpha_fitness_tracker_app/features/dashboard/data/dashboard_
 class TestHelpers {
   /// Create a sample ActivityLogModel for testing
   static ActivityLogModel createSampleActivityLog({
-    int? id,
+    String? id,
     String activityType = 'Running',
     int duration = 30,
     double calories = 150.0,
@@ -16,7 +15,7 @@ class TestHelpers {
     double? distance,
   }) {
     return ActivityLogModel(
-      id: id ?? 1,
+      id: id ?? '1',
       activityType: activityType,
       duration: duration,
       calories: calories,
@@ -31,35 +30,35 @@ class TestHelpers {
     final now = DateTime.now();
     return [
       createSampleActivityLog(
-        id: 1,
+        id: '1',
         activityType: 'Running',
         duration: 30,
         calories: 150.0,
         date: now,
       ),
       createSampleActivityLog(
-        id: 2,
+        id: '2',
         activityType: 'Cycling',
         duration: 45,
         calories: 200.0,
         date: now.subtract(const Duration(days: 1)),
       ),
       createSampleActivityLog(
-        id: 3,
+        id: '3',
         activityType: 'Walking',
         duration: 20,
         calories: 80.0,
         date: now.subtract(const Duration(days: 2)),
       ),
       createSampleActivityLog(
-        id: 4,
+        id: '4',
         activityType: 'Running',
         duration: 35,
         calories: 175.0,
         date: now.subtract(const Duration(days: 3)),
       ),
       createSampleActivityLog(
-        id: 5,
+        id: '5',
         activityType: 'Cycling',
         duration: 60,
         calories: 300.0,

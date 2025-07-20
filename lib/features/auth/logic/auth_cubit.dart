@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'auth_state.dart';
 
+/// Cubit for managing authentication state and actions.
 class AuthCubit extends Cubit<AuthState> {
   final AuthenticationRepository _authenticationRepository;
+
+  /// Creates an [AuthCubit] with the given [AuthenticationRepository].
   AuthCubit(this._authenticationRepository) : super(AuthInitial()) {
     _authenticationRepository.authStateChanges.listen((user) {
       if (user != null) {
@@ -15,6 +18,7 @@ class AuthCubit extends Cubit<AuthState> {
     });
   }
 
+  /// Attempts to log in with the provided [email] and [password].
   Future<void> emitLoginState(String email, String password) async {
     try {
       emit(AuthLoading());
@@ -28,6 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Attempts to sign up with the provided [email] and [password].
   Future<void> emitSignUpState(String email, String password) async {
     try {
       emit(AuthLoading());
@@ -41,6 +46,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Logs out the current user.
   Future<void> emitLogoutState() async {
     await _authenticationRepository.logout();
     emit(AuthUnauthenticated());

@@ -1,290 +1,278 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:codealpha_fitness_tracker_app/features/dashboard/presentation/widgets/weekly_activity_pie_chart.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart';
-import '../helpers/test_helpers.dart';
+import 'package:codealpha_fitness_tracker_app/features/dashboard/presentation/widgets/weekly_activity_pie_chart.dart';
 
 void main() {
-  group('WeeklyActivityPieChart', () {
-    late List<ActivityLogModel> activityLogs;
+  group('WeeklyActivityPieChart Widget Tests', () {
+    testWidgets('should display pie chart with activity data', (WidgetTester tester) async {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Running',
+          duration: 25,
+          calories: 125.0,
+          date: DateTime.now(),
+        ),
+      ];
 
-    setUp(() {
-      activityLogs = TestHelpers.createSampleActivityLogs();
-    });
-
-    testWidgets('should display pie chart when data is available', (WidgetTester tester) async {
-      // Arrange
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: activityLogs,
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing); // Should not show when there's data
-    });
-
-    testWidgets('should display pie chart container', (WidgetTester tester) async {
-      // Arrange
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: activityLogs,
-            ),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      // The chart itself is rendered by fl_chart, so we check for the container
+      expect(find.byType(WeeklyActivityPieChart), findsOneWidget);
+      expect(find.text('Running'), findsOneWidget);
+      expect(find.text('Cycling'), findsOneWidget);
     });
 
     testWidgets('should handle empty activity logs', (WidgetTester tester) async {
-      // Arrange
+      final logs = <ActivityLogModel>[];
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: [],
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.text('No activity data'), findsOneWidget);
+      expect(find.byType(WeeklyActivityPieChart), findsOneWidget);
+      expect(find.text('No activities this week'), findsOneWidget);
+    });
+
+    testWidgets('should display correct activity percentages', (WidgetTester tester) async {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 60,
+          calories: 300.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WeeklyActivityPieChart(activityLogs: logs),
+          ),
+        ),
+      );
+
+      expect(find.text('Running'), findsOneWidget);
+      expect(find.text('Cycling'), findsOneWidget);
+      // Running should be 66.7% (60/90 minutes)
+      expect(find.textContaining('66.7'), findsOneWidget);
+      // Cycling should be 33.3% (30/90 minutes)
+      expect(find.textContaining('33.3'), findsOneWidget);
     });
 
     testWidgets('should handle single activity type', (WidgetTester tester) async {
-      // Arrange
-      final singleTypeLogs = [
-        TestHelpers.createSampleActivityLog(
-          id: 1,
+      final logs = [
+        ActivityLogModel(
+          id: '1',
           activityType: 'Running',
           duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
         ),
-        TestHelpers.createSampleActivityLog(
-          id: 2,
+        ActivityLogModel(
+          id: '2',
           activityType: 'Running',
           duration: 45,
+          calories: 225.0,
+          date: DateTime.now(),
         ),
       ];
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: singleTypeLogs,
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
+      expect(find.text('Running'), findsOneWidget);
+      expect(find.textContaining('100.0'), findsOneWidget);
+    });
+
+    testWidgets('should display legend correctly', (WidgetTester tester) async {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cycling',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '3',
+          activityType: 'Walking',
+          duration: 20,
+          calories: 80.0,
+          date: DateTime.now(),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WeeklyActivityPieChart(activityLogs: logs),
+          ),
+        ),
+      );
+
+      expect(find.text('Running'), findsOneWidget);
+      expect(find.text('Cycling'), findsOneWidget);
+      expect(find.text('Walking'), findsOneWidget);
     });
 
     testWidgets('should handle activities with zero duration', (WidgetTester tester) async {
-      // Arrange
-      final zeroDurationLogs = [
-        TestHelpers.createSampleActivityLog(
-          id: 1,
+      final logs = [
+        ActivityLogModel(
+          id: '1',
           activityType: 'Running',
           duration: 0,
+          calories: 0.0,
+          date: DateTime.now(),
         ),
-        TestHelpers.createSampleActivityLog(
-          id: 2,
+        ActivityLogModel(
+          id: '2',
           activityType: 'Cycling',
           duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
         ),
       ];
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: zeroDurationLogs,
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
+      expect(find.text('Running'), findsOneWidget);
+      expect(find.text('Cycling'), findsOneWidget);
+      // Cycling should be 100% since Running has 0 duration
+      expect(find.textContaining('100.0'), findsOneWidget);
     });
 
-    testWidgets('should be responsive to different screen sizes', (WidgetTester tester) async {
-      // Arrange
-      await tester.binding.setSurfaceSize(const Size(400, 600));
+    testWidgets('should handle large number of activities', (WidgetTester tester) async {
+      final logs = List.generate(10, (index) => ActivityLogModel(
+        id: index.toString(),
+        activityType: 'Activity $index',
+        duration: 10,
+        calories: 50.0,
+        date: DateTime.now(),
+      ));
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: activityLogs,
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.byType(WeeklyActivityPieChart), findsOneWidget);
-      expect(find.byType(Container), findsOneWidget);
-
-      // Reset surface size
-      await tester.binding.setSurfaceSize(null);
+      // Should display all activity types
+      for (int i = 0; i < 10; i++) {
+        expect(find.text('Activity $i'), findsOneWidget);
+      }
     });
 
-    testWidgets('should handle large number of activity types', (WidgetTester tester) async {
-      // Arrange
-      final manyTypesLogs = [
-        TestHelpers.createSampleActivityLog(id: 1, activityType: 'Running', duration: 30),
-        TestHelpers.createSampleActivityLog(id: 2, activityType: 'Cycling', duration: 45),
-        TestHelpers.createSampleActivityLog(id: 3, activityType: 'Walking', duration: 20),
-        TestHelpers.createSampleActivityLog(id: 4, activityType: 'Swimming', duration: 60),
-        TestHelpers.createSampleActivityLog(id: 5, activityType: 'Yoga', duration: 90),
-        TestHelpers.createSampleActivityLog(id: 6, activityType: 'Weight Training', duration: 45),
+    testWidgets('should handle activities with same type but different dates', (WidgetTester tester) async {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Running',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Running',
+          duration: 45,
+          calories: 225.0,
+          date: DateTime.now().subtract(const Duration(days: 1)),
+        ),
       ];
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: manyTypesLogs,
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
+      expect(find.text('Running'), findsOneWidget);
+      expect(find.textContaining('100.0'), findsOneWidget);
     });
 
-    testWidgets('should handle activities with same duration', (WidgetTester tester) async {
-      // Arrange
-      final sameDurationLogs = [
-        TestHelpers.createSampleActivityLog(id: 1, activityType: 'Running', duration: 30),
-        TestHelpers.createSampleActivityLog(id: 2, activityType: 'Cycling', duration: 30),
-        TestHelpers.createSampleActivityLog(id: 3, activityType: 'Walking', duration: 30),
+    testWidgets('should handle activities with special characters in names', (WidgetTester tester) async {
+      final logs = [
+        ActivityLogModel(
+          id: '1',
+          activityType: 'Strength Training',
+          duration: 30,
+          calories: 150.0,
+          date: DateTime.now(),
+        ),
+        ActivityLogModel(
+          id: '2',
+          activityType: 'Cardio & HIIT',
+          duration: 45,
+          calories: 200.0,
+          date: DateTime.now(),
+        ),
       ];
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: sameDurationLogs,
-            ),
+            body: WeeklyActivityPieChart(activityLogs: logs),
           ),
         ),
       );
 
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
-    });
-
-    testWidgets('should handle very large duration values', (WidgetTester tester) async {
-      // Arrange
-      final largeDurationLogs = [
-        TestHelpers.createSampleActivityLog(id: 1, activityType: 'Running', duration: 9999),
-        TestHelpers.createSampleActivityLog(id: 2, activityType: 'Cycling', duration: 8888),
-      ];
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: largeDurationLogs,
-            ),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
-    });
-
-    testWidgets('should maintain state when rebuilt', (WidgetTester tester) async {
-      // Arrange
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: activityLogs,
-            ),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
-
-      // Rebuild with same data
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: activityLogs,
-            ),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
-    });
-
-    testWidgets('should handle null activity logs gracefully', (WidgetTester tester) async {
-      // Arrange
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: [],
-            ),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.text('No activity data'), findsOneWidget);
-    });
-
-    testWidgets('should display correct percentage calculations', (WidgetTester tester) async {
-      // Arrange
-      final testLogs = [
-        TestHelpers.createSampleActivityLog(id: 1, activityType: 'Running', duration: 60),
-        TestHelpers.createSampleActivityLog(id: 2, activityType: 'Cycling', duration: 30),
-        TestHelpers.createSampleActivityLog(id: 3, activityType: 'Walking', duration: 30),
-      ];
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyActivityPieChart(
-              activityLogs: testLogs,
-            ),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.byType(Container), findsOneWidget);
-      expect(find.text('No activity data'), findsNothing);
-      // The chart should show Running as 33%, Cycling as 33%, Walking as 33%
+      expect(find.text('Strength Training'), findsOneWidget);
+      expect(find.text('Cardio & HIIT'), findsOneWidget);
     });
   });
 } 

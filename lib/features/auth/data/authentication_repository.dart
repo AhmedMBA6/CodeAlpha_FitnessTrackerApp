@@ -1,9 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Repository for handling authentication logic using FirebaseAuth.
 class AuthenticationRepository {
-  final _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth;
 
-  /// [Email Authentication] - Sign-in
+  /// Creates an [AuthenticationRepository].
+  /// Optionally accepts a [FirebaseAuth] instance for testing/mocking.
+  AuthenticationRepository({FirebaseAuth? firebaseAuth}) : _auth = firebaseAuth ?? FirebaseAuth.instance;
+
+  /// Signs in a user with email and password.
+  /// Throws a string error message on failure.
   Future<User?> loginWithEmailAndPassword(String email, String password) async {
     try {
       final result = await _auth.signInWithEmailAndPassword(
@@ -14,11 +20,12 @@ class AuthenticationRepository {
     } on FirebaseAuthException catch (e) {
       throw "Authentication failed: ${e.message}";
     } catch (e) {
-      throw "Somthing went wrong, please try again";
+      throw "Something went wrong, please try again";
     }
   }
 
-  /// [Email Authentication] - Sign-up
+  /// Registers a user with email and password.
+  /// Throws a string error message on failure.
   Future<User?> signUpWithEmailAndPassword(
     String email,
     String password,
@@ -32,15 +39,15 @@ class AuthenticationRepository {
     } on FirebaseAuthException catch (e) {
       throw "Registration failed: ${e.message}";
     } catch (e) {
-      throw 'Somthing went wrong, Please try again';
+      throw 'Something went wrong, Please try again';
     }
   }
 
-  /// [Logout User]
+  /// Signs out the current user.
   Future<void> logout() async {
     await _auth.signOut();
   }
 
-  /// Listen to auth state changes (for splash or wrapper)
+  /// Stream of authentication state changes.
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 }
