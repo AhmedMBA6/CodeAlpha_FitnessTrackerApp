@@ -3,13 +3,16 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
+import 'dart:async' as _i4;
 
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart'
-    as _i4;
-import 'package:codealpha_fitness_tracker_app/features/activity_log/data/repos/activity_log_repository.dart'
+    as _i5;
+import 'package:codealpha_fitness_tracker_app/features/activity_log/data/repos/activity_log_goal_link_repository.dart'
     as _i2;
+import 'package:codealpha_fitness_tracker_app/features/activity_log/data/repos/activity_log_repository.dart'
+    as _i3;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -25,46 +28,136 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeActivityLogGoalLinkRepository_0 extends _i1.SmartFake
+    implements _i2.ActivityLogGoalLinkRepository {
+  _FakeActivityLogGoalLinkRepository_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(parent, parentInvocation);
+}
+
 /// A class which mocks [ActivityLogRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockActivityLogRepository extends _i1.Mock
-    implements _i2.ActivityLogRepository {
+    implements _i3.ActivityLogRepository {
   MockActivityLogRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<int> addActivity(_i4.ActivityLogModel? log) =>
+  _i2.ActivityLogGoalLinkRepository get linkRepo =>
       (super.noSuchMethod(
-            Invocation.method(#addActivity, [log]),
-            returnValue: _i3.Future<int>.value(0),
-          )
-          as _i3.Future<int>);
-
-  @override
-  _i3.Future<List<_i4.ActivityLogModel>> getAllActivities() =>
-      (super.noSuchMethod(
-            Invocation.method(#getAllActivities, []),
-            returnValue: _i3.Future<List<_i4.ActivityLogModel>>.value(
-              <_i4.ActivityLogModel>[],
+            Invocation.getter(#linkRepo),
+            returnValue: _FakeActivityLogGoalLinkRepository_0(
+              this,
+              Invocation.getter(#linkRepo),
             ),
           )
-          as _i3.Future<List<_i4.ActivityLogModel>>);
+          as _i2.ActivityLogGoalLinkRepository);
 
   @override
-  _i3.Future<int> updateActivity(_i4.ActivityLogModel? log) =>
+  _i4.Future<List<_i5.ActivityLogModel>> getAllActivities({
+    bool? runCleanup = false,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getAllActivities, [], {#runCleanup: runCleanup}),
+            returnValue: _i4.Future<List<_i5.ActivityLogModel>>.value(
+              <_i5.ActivityLogModel>[],
+            ),
+          )
+          as _i4.Future<List<_i5.ActivityLogModel>>);
+
+  @override
+  _i4.Future<String> addActivity(_i5.ActivityLogModel? log) =>
+      (super.noSuchMethod(
+            Invocation.method(#addActivity, [log]),
+            returnValue: _i4.Future<String>.value(
+              _i6.dummyValue<String>(
+                this,
+                Invocation.method(#addActivity, [log]),
+              ),
+            ),
+          )
+          as _i4.Future<String>);
+
+  @override
+  _i4.Future<void> updateActivity(_i5.ActivityLogModel? log) =>
       (super.noSuchMethod(
             Invocation.method(#updateActivity, [log]),
-            returnValue: _i3.Future<int>.value(0),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
           )
-          as _i3.Future<int>);
+          as _i4.Future<void>);
 
   @override
-  _i3.Future<int> deleteActivity(int? id) =>
+  _i4.Future<bool> activityExists(String? id) =>
       (super.noSuchMethod(
-            Invocation.method(#deleteActivity, [id]),
-            returnValue: _i3.Future<int>.value(0),
+            Invocation.method(#activityExists, [id]),
+            returnValue: _i4.Future<bool>.value(false),
           )
-          as _i3.Future<int>);
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<void> deleteActivity(
+    String? id, {
+    bool? cleanupOrphanedLinks = false,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #deleteActivity,
+              [id],
+              {#cleanupOrphanedLinks: cleanupOrphanedLinks},
+            ),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<Map<String, dynamic>> checkCleanupNeeded() =>
+      (super.noSuchMethod(
+            Invocation.method(#checkCleanupNeeded, []),
+            returnValue: _i4.Future<Map<String, dynamic>>.value(
+              <String, dynamic>{},
+            ),
+          )
+          as _i4.Future<Map<String, dynamic>>);
+
+  @override
+  _i4.Future<void> runCleanupOperations() =>
+      (super.noSuchMethod(
+            Invocation.method(#runCleanupOperations, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<List<_i5.ActivityLogModel>> getActivitiesForGoal(String? goalId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getActivitiesForGoal, [goalId]),
+            returnValue: _i4.Future<List<_i5.ActivityLogModel>>.value(
+              <_i5.ActivityLogModel>[],
+            ),
+          )
+          as _i4.Future<List<_i5.ActivityLogModel>>);
+
+  @override
+  _i4.Future<void> fixActivitiesWithNullIds() =>
+      (super.noSuchMethod(
+            Invocation.method(#fixActivitiesWithNullIds, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> removeDuplicateActivities() =>
+      (super.noSuchMethod(
+            Invocation.method(#removeDuplicateActivities, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }

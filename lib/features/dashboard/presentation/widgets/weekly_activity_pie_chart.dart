@@ -16,15 +16,38 @@ class WeeklyActivityPieChart extends StatelessWidget {
     final activityTypeTotals = _calculateActivityTypeTotals();
     final total = activityTypeTotals.values.fold<double>(0, (a, b) => a + b);
     
-    return Container(
+    return SizedBox(
       height: DashboardConstants.chartHeight,
       child: activityTypeTotals.isEmpty
           ? const Center(child: Text('No activity data'))
-          : PieChart(
-              PieChartData(
-                sections: _buildPieSections(activityTypeTotals, total),
-                sectionsSpace: 2,
-                centerSpaceRadius: DashboardConstants.centerSpaceRadius,
+          : Tooltip(
+              message: 'Activity type breakdown pie chart',
+              child: Semantics(
+                label: 'Activity type breakdown pie chart',
+                child: PieChart(
+                  PieChartData(
+                    sections: _buildPieSections(activityTypeTotals, total),
+                    sectionsSpace: 2,
+                    centerSpaceRadius: DashboardConstants.centerSpaceRadius,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {
+                        if (event.isInterestedForInteractions && response != null && response.touchedSection != null) {
+                          final index = response.touchedSection!.touchedSectionIndex;
+                          final type = activityTypeTotals.keys.elementAt(index);
+                          final count = activityTypeTotals[type]!.toInt();
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text('Activity Type: $type'),
+                              content: Text('Count: $count'),
+                              actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close'))],
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
               ),
             ),
     );

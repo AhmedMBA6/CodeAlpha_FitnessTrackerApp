@@ -7,57 +7,32 @@ import 'package:codealpha_fitness_tracker_app/features/dashboard/logic/dashboard
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/models/activity_log_model.dart';
 import 'package:codealpha_fitness_tracker_app/features/activity_log/data/repos/activity_log_repository.dart';
 import '../helpers/test_helpers.dart';
+import 'package:get_it/get_it.dart';
+import 'package:mockito/mockito.dart';
 
 // Mock repository for testing
-class MockActivityLogRepository implements ActivityLogRepository {
-  final List<ActivityLogModel> _logs;
-
-  MockActivityLogRepository(this._logs);
-
-  @override
-  Future<List<ActivityLogModel>> getAllActivities() async {
-    return _logs;
-  }
-
-  @override
-  Future<int> addActivity(ActivityLogModel activity) async {
-    // Mock implementation
-    return 1;
-  }
-
-  @override
-  Future<int> updateActivity(ActivityLogModel activity) async {
-    // Mock implementation
-    return 1;
-  }
-
-  @override
-  Future<int> deleteActivity(int id) async {
-    // Mock implementation
-    return 1;
-  }
-
-  @override
-  Future<ActivityLogModel?> getActivityById(int id) async {
-    // Mock implementation
-    return null;
-  }
-}
+class MockActivityLogRepository extends Mock implements ActivityLogRepository {}
 
 void main() {
+  final getIt = GetIt.instance;
+  late MockActivityLogRepository mockActivityLogRepository;
+  late List<ActivityLogModel> testLogs;
+
+  setUp(() {
+    testLogs = TestHelpers.createSampleActivityLogs();
+    mockActivityLogRepository = MockActivityLogRepository();
+    getIt.registerSingleton<ActivityLogRepository>(mockActivityLogRepository);
+  });
+
+  tearDown(() {
+    getIt.reset();
+  });
+
   group('DashboardScreen Integration Tests', () {
-    late MockActivityLogRepository mockRepository;
-    late List<ActivityLogModel> testLogs;
-
-    setUp(() {
-      testLogs = TestHelpers.createSampleActivityLogs();
-      mockRepository = MockActivityLogRepository(testLogs);
-    });
-
     Widget createTestWidget() {
       return MaterialApp(
         home: BlocProvider<DashboardCubit>(
-          create: (context) => DashboardCubit(mockRepository),
+          create: (context) => DashboardCubit(),
           child: const DashboardScreen(),
         ),
       );
@@ -201,12 +176,12 @@ void main() {
 
     testWidgets('should display error state when repository fails', (WidgetTester tester) async {
       // Arrange
-      final failingRepository = MockActivityLogRepository([]);
+      final failingRepository = MockActivityLogRepository();
       // Simulate failure by overriding the method
       await tester.pumpWidget(
         MaterialApp(
           home: BlocProvider<DashboardCubit>(
-            create: (context) => DashboardCubit(failingRepository),
+            create: (context) => DashboardCubit(),
             child: const DashboardScreen(),
           ),
         ),
@@ -237,11 +212,11 @@ void main() {
 
     testWidgets('should handle empty activity data gracefully', (WidgetTester tester) async {
       // Arrange
-      final emptyRepository = MockActivityLogRepository([]);
+      final emptyRepository = MockActivityLogRepository();
       await tester.pumpWidget(
         MaterialApp(
           home: BlocProvider<DashboardCubit>(
-            create: (context) => DashboardCubit(emptyRepository),
+            create: (context) => DashboardCubit(),
             child: const DashboardScreen(),
           ),
         ),
