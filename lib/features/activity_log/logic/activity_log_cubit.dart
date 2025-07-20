@@ -64,12 +64,21 @@ class ActivityLogListCubit extends Cubit<ActivityLogState> {
   /// Deletes an activity log entry and reloads the list.
   Future<void> deleteActivity(String id) async {
     if (isClosed) return;
+    
+    // Validate ID before attempting deletion
+    if (id.isEmpty) {
+      if (!isClosed) {
+        emit(ActivityLogError('Invalid activity ID. Cannot delete activity.'));
+      }
+      return;
+    }
+    
     try {
       await _repository.deleteActivity(id);
       loadActivities();
     } catch (e) {
       if (!isClosed) {
-        emit(ActivityLogError('Could not delete activity. Please try again.'));
+        emit(ActivityLogError('Could not delete activity: ${e.toString()}'));
       }
     }
   }

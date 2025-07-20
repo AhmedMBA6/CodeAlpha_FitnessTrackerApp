@@ -354,9 +354,15 @@ class _ActivityLogListBody extends StatelessWidget {
                             builder: (ctx) => AlertDialog(
                               title: Row(
                                 children: const [
-                                  Icon(Icons.warning, color: Colors.red, size: 28),
+                                  Icon(Icons.warning, color: Colors.red, size: 24),
                                   SizedBox(width: 8),
-                                  Text('Delete Activity Log'),
+                                  Expanded(
+                                    child: Text(
+                                      'Delete Activity',
+                                      style: TextStyle(fontSize: 18),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ],
                               ),
                               content: const Text('Are you sure you want to delete this activity log? This action cannot be undone.'),
@@ -376,26 +382,30 @@ class _ActivityLogListBody extends StatelessWidget {
                           );
                           if (confirm == true) {
                            try {
-                             if (log.id != null) {
-                               // Show loading indicator
-                               ScaffoldMessenger.of(context).showSnackBar(
-                                 const SnackBar(
-                                   content: Row(
-                                     children: [
-                                       SizedBox(
-                                         width: 20,
-                                         height: 20,
-                                         child: CircularProgressIndicator(strokeWidth: 2),
-                                       ),
-                                       SizedBox(width: 16),
-                                       Text('Deleting activity...'),
-                                     ],
-                                   ),
-                                   duration: Duration(seconds: 2),
+                             // Validate activity ID before proceeding
+                             if (log.id == null || log.id!.isEmpty) {
+                               throw Exception('Activity ID is null or empty');
+                             }
+                             
+                             // Show loading indicator
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(
+                                 content: Row(
+                                   children: [
+                                     SizedBox(
+                                       width: 20,
+                                       height: 20,
+                                       child: CircularProgressIndicator(strokeWidth: 2),
+                                     ),
+                                     SizedBox(width: 16),
+                                     Text('Deleting activity...'),
+                                   ],
                                  ),
-                               );
-                               
-                               // Delete the activity
+                                 duration: Duration(seconds: 2),
+                               ),
+                             );
+                             
+                             // Delete the activity
                                await context.read<ActivityLogListCubit>().deleteActivity(log.id!);
                                
                                // Show success message
@@ -417,9 +427,6 @@ class _ActivityLogListBody extends StatelessWidget {
                                    ),
                                  );
                                }
-                             } else {
-                               throw Exception('Activity ID is null');
-                             }
                            } catch (e) {
                              // Show error message
                              if (context.mounted) {
@@ -427,6 +434,7 @@ class _ActivityLogListBody extends StatelessWidget {
                                  SnackBar(
                                    content: Text('Failed to delete activity: ${e.toString()}'),
                                    backgroundColor: Colors.red,
+                                   duration: const Duration(seconds: 4),
                                  ),
                                );
                              }
@@ -645,7 +653,7 @@ class _EnhancedActivityCard extends StatelessWidget {
                     _StatItem(
                       icon: Icons.straighten,
                       label: 'Distance',
-                      value: '${log.distance} km',
+                      value: '${log.distance != null ? log.distance!.toStringAsFixed(2) : '-'} km',
                       color: Colors.green,
                     ),
                   ],

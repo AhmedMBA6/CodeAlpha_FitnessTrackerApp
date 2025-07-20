@@ -34,8 +34,13 @@ class ActivityLogRepository {
   }
 
   Future<int> addActivity(ActivityLogModel log) async {
-    // Convert tags list to JSON string for SQLite storage
+    // Generate a unique ID if not provided
     final jsonData = log.toJson();
+    if (jsonData['id'] == null || jsonData['id'].toString().isEmpty) {
+      jsonData['id'] = DateTime.now().millisecondsSinceEpoch.toString();
+    }
+    
+    // Convert tags list to JSON string for SQLite storage
     if (jsonData['tags'] is List) {
       jsonData['tags'] = jsonEncode(jsonData['tags']);
     }
@@ -45,8 +50,8 @@ class ActivityLogRepository {
       jsonData.remove('activityType');
     }
     await _dbHelper.insertActivityLog(jsonData);
-    // Return the log's id as int if possible, else 1
-    return int.tryParse(log.id ?? '') ?? 1;
+    // Return the generated ID as int
+    return int.tryParse(jsonData['id']) ?? DateTime.now().millisecondsSinceEpoch;
   }
 
   Future<void> updateActivity(ActivityLogModel log) async {
