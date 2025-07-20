@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/auth_cubit.dart';
 import '../../../logic/auth_state.dart';
 
+/// Form widget for user login.
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
 
@@ -11,6 +12,7 @@ class LoginForm extends StatefulWidget {
   State<LoginForm> createState() => _LoginFormState();
 }
 
+/// State for [LoginForm]. Handles form logic and submission.
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
@@ -57,6 +59,7 @@ class _LoginFormState extends State<LoginForm> {
                 controller: _emailCtrl,
                 decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
+                autofocus: true,
                 validator: (val) =>
                     val == null || val.isEmpty ? 'Enter your email' : null,
               ),
@@ -74,12 +77,12 @@ class _LoginFormState extends State<LoginForm> {
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
                       onPressed: () => _submitLogin(context),
-                      child: const Text("Login"),
+                      child: const Text("Login", semanticsLabel: "Login Button"),
                     ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, Routes.signupScreen);
+                  Navigator.pushNamed(context, Routes.signup);
                 },
                 child: const Text("Don't have an account? Sign up"),
               ),

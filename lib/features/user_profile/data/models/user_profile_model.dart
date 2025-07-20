@@ -1,3 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'user_profile_model.g.dart';
+
+/// Model representing a user's profile data.
+@JsonSerializable()
 class UserProfileModel {
   final String uid;
   final String name;
@@ -15,27 +21,9 @@ class UserProfileModel {
     required this.gender,
   });
 
-  
-  Map<String, dynamic> toMap() {
-    return {
-      'uid': uid,
-      'name': name,
-      'age': age,
-      'weight': weight,
-      'height': height,
-      'gender': gender,
-    };
-  }
+  /// Converts this model to a JSON map.
+  Map<String, dynamic> toJson() => _$UserProfileModelToJson(this);
 
-  factory UserProfileModel.fromMap(Map<String, dynamic> map) {
-    return UserProfileModel(
-      uid: map['uid'],
-      name: map['name'],
-      age: map['age'],
-      weight: map['weight'].toDouble(),
-      height: map['height'].toDouble(),
-      gender: map['gender'],
-    );
-  }
-
+  /// Creates a [UserProfileModel] from a JSON map.
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) => _$UserProfileModelFromJson(json);
 }
