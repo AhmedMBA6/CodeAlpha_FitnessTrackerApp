@@ -1,9 +1,17 @@
+/// Defines all named route strings used throughout the app for navigation.
 class Routes {
-  static const String loginScreen = '/loginScreen';
-  static const String signupScreen = '/signupScreen';
+  /// Route for the home screen (main menu/dashboard entry).
   static const String homeScreen = '/homeScreen';
-  static const String completeProfile = '/completeProfile';
+  /// Route for the activity log list screen.
   static const String activityLogList = '/activityLogList';
+  /// Route for the dashboard screen.
   static const String dashboard = '/dashboard';
-  static const String routeTracking = '/routeTracking';
+  /// Route for the goals screen.
+  static const String goals = '/goals';
+  /// Route for the login screen.
+  static const String login = '/login';
+  /// Route for the signup screen.
+  static const String signup = '/signup';
+  /// Route for completing user profile after signup.
+  static const String completeProfile = '/complete-profile';
 }
