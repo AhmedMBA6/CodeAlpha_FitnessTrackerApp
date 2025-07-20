@@ -11,13 +11,13 @@ class InMemoryActivityLogRepository implements ActivityLogRepository {
   ActivityLogGoalLinkRepository get linkRepo => _linkRepo;
 
   @override
-  Future<List<ActivityLogModel>> getAllActivities() async => _logs;
+  Future<List<ActivityLogModel>> getAllActivities({bool runCleanup = false}) async => _logs;
 
   @override
-  Future<int> addActivity(ActivityLogModel log) async {
-    final newId = (_logs.length + 1).toString();
+  Future<String> addActivity(ActivityLogModel log) async {
+    final newId = DateTime.now().millisecondsSinceEpoch.toString();
     _logs.add(log.copyWith(id: newId));
-    return int.parse(newId);
+    return newId;
   }
 
   @override
@@ -27,10 +27,49 @@ class InMemoryActivityLogRepository implements ActivityLogRepository {
   }
 
   @override
-  Future<void> deleteActivity(String id) async => _logs.removeWhere((l) => l.id == id);
+  Future<void> deleteActivity(String id, {bool cleanupOrphanedLinks = false}) async {
+    _logs.removeWhere((l) => l.id == id);
+    if (cleanupOrphanedLinks) {
+      await _cleanupOrphanedLinks();
+    }
+  }
 
   @override
   Future<List<ActivityLogModel>> getActivitiesForGoal(String goalId) async {
     return _logs.where((log) => log.linkedGoalIds?.contains(goalId) == true).toList();
+  }
+
+  @override
+  Future<bool> activityExists(String id) async {
+    return _logs.any((log) => log.id == id);
+  }
+
+  @override
+  Future<Map<String, dynamic>> checkCleanupNeeded() async {
+    return {
+      'needsCleanup': false,
+      'nullIdActivities': 0,
+      'orphanedLinks': 0,
+      'duplicateActivities': 0,
+    };
+  }
+
+  @override
+  Future<void> fixActivitiesWithNullIds() async {
+    // No implementation needed for in-memory repository
+  }
+
+  @override
+  Future<void> removeDuplicateActivities() async {
+    // No implementation needed for in-memory repository
+  }
+
+  @override
+  Future<void> runCleanupOperations() async {
+    // No implementation needed for in-memory repository
+  }
+
+  Future<void> _cleanupOrphanedLinks() async {
+    // No implementation needed for in-memory repository
   }
 } 

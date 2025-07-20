@@ -13,7 +13,7 @@ class ActivityLogModel {
   final int? heartRate;
   final double? distance; // in km
   final List<String>? tags; // e.g., ['trapezius', 'cardio']
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   /// Transient: Only for UI convenience, not persisted. Do not use for DB queries.
   final List<String>? linkedGoalIds;
 

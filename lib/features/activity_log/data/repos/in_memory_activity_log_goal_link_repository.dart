@@ -41,4 +41,26 @@ class InMemoryActivityLogGoalLinkRepository implements ActivityLogGoalLinkReposi
   Future<List<ActivityLogGoalLink>> getAllLinks() async {
     return _links;
   }
+
+  @override
+  Future<void> deleteAllLinksForActivityLog(String activityLogId) async {
+    _links.removeWhere((l) => l.activityLogId == activityLogId);
+  }
+
+  @override
+  Future<void> deleteLink(String linkId) async {
+    _links.removeWhere((l) => l.id == linkId);
+  }
+
+  @override
+  Future<void> updateLink(Map<String, dynamic> data) async {
+    final linkId = data['id'] as String?;
+    if (linkId != null) {
+      final idx = _links.indexWhere((l) => l.id == linkId);
+      if (idx != -1) {
+        final updated = ActivityLogGoalLink.fromJson(data);
+        _links[idx] = updated;
+      }
+    }
+  }
 } 
