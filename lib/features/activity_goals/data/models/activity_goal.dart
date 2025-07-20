@@ -1,136 +1,76 @@
 import 'package:json_annotation/json_annotation.dart';
-import '../../../route_tracking/data/models/route_point.dart';
 
 part 'activity_goal.g.dart';
 
 enum GoalType {
-  @JsonValue('distance')
-  distance,
-  @JsonValue('destination')
-  destination,
+  @JsonValue('quantitative')
+  quantitative,
+  @JsonValue('qualitative')
+  qualitative,
 }
 
 @JsonSerializable()
 class ActivityGoal {
-  final GoalType type;
-  final double? goalDistance; // in meters, for distance goals
-  final RoutePoint? goalDestination; // for destination goals
-  final String? goalDescription; // optional description
+  final String id;
+  final GoalType goalType;
+  final String? description;
+  // For quantitative goals
+  final double? targetValue;
+  final String? unit; // e.g., 'calories', 'minutes', 'km'
+  // For qualitative goals
+  final List<String>? tags; // e.g., ['trapezius', 'strength']
+  @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   final DateTime createdAt;
+  // Optionally, for UI
+  final double? progress; // 0.0 - 1.0
+  final bool? isCompleted;
+  @JsonKey(fromJson: _boolFromInt, toJson: _boolToInt)
+  final bool isArchived;
 
-  const ActivityGoal({
-    required this.type,
-    this.goalDistance,
-    this.goalDestination,
-    this.goalDescription,
+  ActivityGoal({
+    required this.id,
+    required this.goalType,
+    this.description,
+    this.targetValue,
+    this.unit,
+    this.tags,
     required this.createdAt,
+    this.progress,
+    this.isCompleted,
+    this.isArchived = false,
   });
 
   factory ActivityGoal.fromJson(Map<String, dynamic> json) => _$ActivityGoalFromJson(json);
   Map<String, dynamic> toJson() => _$ActivityGoalToJson(this);
 
-  Map<String, dynamic> toMap() {
-    return {
-      'type': type.name,
-      'goal_distance': goalDistance,
-      'goal_destination_lat': goalDestination?.latitude,
-      'goal_destination_lng': goalDestination?.longitude,
-      'goal_destination_timestamp': goalDestination?.timestamp.toIso8601String(),
-      'goal_description': goalDescription,
-      'created_at': createdAt.toIso8601String(),
-    };
-  }
-
-  factory ActivityGoal.fromMap(Map<String, dynamic> map) {
-    RoutePoint? destination;
-    if (map['goal_destination_lat'] != null && map['goal_destination_lng'] != null) {
-      destination = RoutePoint(
-        latitude: map['goal_destination_lat'] as double,
-        longitude: map['goal_destination_lng'] as double,
-        timestamp: DateTime.parse(map['goal_destination_timestamp'] as String),
-      );
-    }
-
-    return ActivityGoal(
-      type: GoalType.values.firstWhere(
-        (e) => e.name == map['type'],
-        orElse: () => GoalType.distance,
-      ),
-      goalDistance: map['goal_distance'] as double?,
-      goalDestination: destination,
-      goalDescription: map['goal_description'] as String?,
-      createdAt: DateTime.parse(map['created_at'] as String),
-    );
-  }
+  static DateTime _dateTimeFromJson(dynamic value) => value is String ? DateTime.parse(value) : value as DateTime;
+  static String _dateTimeToJson(DateTime value) => value.toIso8601String();
+  static bool _boolFromInt(dynamic value) => value is int ? value == 1 : value == true;
+  static int _boolToInt(bool value) => value ? 1 : 0;
 
   ActivityGoal copyWith({
-    GoalType? type,
-    double? goalDistance,
-    RoutePoint? goalDestination,
-    String? goalDescription,
+    String? id,
+    GoalType? goalType,
+    String? description,
+    double? targetValue,
+    String? unit,
+    List<String>? tags,
     DateTime? createdAt,
+    double? progress,
+    bool? isCompleted,
+    bool? isArchived,
   }) {
     return ActivityGoal(
-      type: type ?? this.type,
-      goalDistance: goalDistance ?? this.goalDistance,
-      goalDestination: goalDestination ?? this.goalDestination,
-      goalDescription: goalDescription ?? this.goalDescription,
+      id: id ?? this.id,
+      goalType: goalType ?? this.goalType,
+      description: description ?? this.description,
+      targetValue: targetValue ?? this.targetValue,
+      unit: unit ?? this.unit,
+      tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,
+      progress: progress ?? this.progress,
+      isCompleted: isCompleted ?? this.isCompleted,
+      isArchived: isArchived ?? this.isArchived,
     );
-  }
-
-  /// Creates a distance-based goal
-  factory ActivityGoal.distance({
-    required double distanceInMeters,
-    String? description,
-  }) {
-    return ActivityGoal(
-      type: GoalType.distance,
-      goalDistance: distanceInMeters,
-      goalDescription: description,
-      createdAt: DateTime.now(),
-    );
-  }
-
-  /// Creates a destination-based goal
-  factory ActivityGoal.destination({
-    required RoutePoint destination,
-    String? description,
-  }) {
-    return ActivityGoal(
-      type: GoalType.destination,
-      goalDestination: destination,
-      goalDescription: description,
-      createdAt: DateTime.now(),
-    );
-  }
-
-  /// Validates the goal data
-  bool get isValid {
-    switch (type) {
-      case GoalType.distance:
-        return goalDistance != null && goalDistance! > 0;
-      case GoalType.destination:
-        return goalDestination != null;
-    }
-  }
-
-  /// Gets a human-readable description of the goal
-  String get displayText {
-    switch (type) {
-      case GoalType.distance:
-        if (goalDistance! < 1000) {
-          return '${goalDistance!.toStringAsFixed(0)}m';
-        } else {
-          return '${(goalDistance! / 1000).toStringAsFixed(2)}km';
-        }
-      case GoalType.destination:
-        return goalDescription ?? 'Destination';
-    }
-  }
-
-  @override
-  String toString() {
-    return 'ActivityGoal(type: $type, goalDistance: $goalDistance, goalDestination: $goalDestination, goalDescription: $goalDescription, createdAt: $createdAt)';
   }
 } 

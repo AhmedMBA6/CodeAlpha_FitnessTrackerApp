@@ -1,138 +1,57 @@
-import '../models/activity_goal.dart';
-import '../../../route_tracking/data/models/route_point.dart';
+import '../../data/models/activity_goal.dart';
 import '../../../../core/utils/sqlite_helper.dart';
 
 class ActivityGoalRepository {
-  final SQLiteHelper _sqliteHelper;
+  final SQLHelper _dbHelper;
 
-  ActivityGoalRepository({SQLiteHelper? sqliteHelper}) 
-      : _sqliteHelper = sqliteHelper ?? SQLiteHelper();
+  ActivityGoalRepository({SQLHelper? dbHelper}) : _dbHelper = dbHelper ?? SQLHelper();
 
-  /// Creates a distance-based goal
-  ActivityGoal createDistanceGoal({
-    required double distanceInMeters,
-    String? description,
-  }) {
-    return ActivityGoal.distance(
-      distanceInMeters: distanceInMeters,
-      description: description,
-    );
+  Future<List<ActivityGoal>> getAllGoals() async {
+    final maps = await _dbHelper.getAllActivityGoals();
+    return maps.map((m) => ActivityGoal.fromJson(m)).toList();
   }
 
-  /// Creates a destination-based goal
-  ActivityGoal createDestinationGoal({
-    required RoutePoint destination,
-    String? description,
-  }) {
-    return ActivityGoal.destination(
-      destination: destination,
-      description: description,
-    );
+  Future<List<ActivityGoal>> getGoalsByArchived(bool isArchived) async {
+    final maps = await _dbHelper.getGoalsByArchived(isArchived);
+    return maps.map((m) => ActivityGoal.fromJson(m)).toList();
   }
 
-  /// Validates a goal
-  bool isValidGoal(ActivityGoal goal) {
-    return goal.isValid;
+  Future<void> addGoal(ActivityGoal goal) async {
+    await _dbHelper.insertActivityGoal(goal.toJson());
   }
 
-  /// Saves a goal to a route (this is handled by the route tracking repository)
-  /// This method is provided for future extensibility if we need to store goals separately
-  Future<void> saveGoal(ActivityGoal goal, String routeId) async {
-    // For now, goals are stored as part of the route
-    // This method can be extended if we need separate goal storage
+  Future<void> updateGoal(ActivityGoal goal) async {
+    await _dbHelper.updateActivityGoal(goal.toJson());
   }
 
-  /// Retrieves a goal from a route
-  Future<ActivityGoal?> getGoalForRoute(String routeId) async {
-    final route = await _sqliteHelper.getRouteById(routeId);
-    return route?.goal;
+  Future<void> deleteGoal(String id) async {
+    await _dbHelper.deleteActivityGoal(id);
   }
 
-  /// Updates a goal for a route
-  Future<void> updateGoalForRoute(String routeId, ActivityGoal goal) async {
-    final route = await _sqliteHelper.getRouteById(routeId);
-    if (route != null) {
-      final updatedRoute = route.copyWith(goal: goal);
-      await _sqliteHelper.updateRoute(updatedRoute);
-    }
+  Future<void> archiveGoal(String goalId) async {
+    final goals = await _dbHelper.getAllActivityGoals();
+    final goal = goals.firstWhere((g) => g['id'] == goalId);
+    final updated = Map<String, dynamic>.from(goal);
+    updated['isArchived'] = true;
+    await _dbHelper.updateActivityGoal(updated);
   }
 
-  /// Deletes a goal from a route
-  Future<void> deleteGoalFromRoute(String routeId) async {
-    final route = await _sqliteHelper.getRouteById(routeId);
-    if (route != null) {
-      final updatedRoute = route.copyWith(goal: null);
-      await _sqliteHelper.updateRoute(updatedRoute);
-    }
+  Future<void> unarchiveGoal(String goalId) async {
+    final goals = await _dbHelper.getAllActivityGoals();
+    final goal = goals.firstWhere((g) => g['id'] == goalId);
+    final updated = Map<String, dynamic>.from(goal);
+    updated['isArchived'] = false;
+    await _dbHelper.updateActivityGoal(updated);
   }
 
-  /// Gets all routes with goals
-  Future<List<Map<String, dynamic>>> getRoutesWithGoals() async {
-    final routes = await _sqliteHelper.getAllRoutes();
-    return routes
-        .where((route) => route.goal != null)
-        .map((route) => {
-              'routeId': route.id,
-              'routeName': route.name,
-              'goal': route.goal!,
-              'isGoalReached': route.isGoalReached,
-              'goalProgress': route.goalProgress,
-            })
-        .toList();
-  }
-
-  /// Gets routes with completed goals
-  Future<List<Map<String, dynamic>>> getRoutesWithCompletedGoals() async {
-    final routes = await _sqliteHelper.getAllRoutes();
-    return routes
-        .where((route) => route.goal != null && route.isGoalReached)
-        .map((route) => {
-              'routeId': route.id,
-              'routeName': route.name,
-              'goal': route.goal!,
-              'completionTime': route.endTime,
-            })
-        .toList();
-  }
-
-  /// Gets routes with pending goals
-  Future<List<Map<String, dynamic>>> getRoutesWithPendingGoals() async {
-    final routes = await _sqliteHelper.getAllRoutes();
-    return routes
-        .where((route) => route.goal != null && !route.isGoalReached)
-        .map((route) => {
-              'routeId': route.id,
-              'routeName': route.name,
-              'goal': route.goal!,
-              'goalProgress': route.goalProgress,
-            })
-        .toList();
-  }
-
-  /// Gets goal statistics
   Future<Map<String, dynamic>> getGoalStatistics() async {
-    final routes = await _sqliteHelper.getAllRoutes();
-    final routesWithGoals = routes.where((route) => route.goal != null).toList();
-    
-    if (routesWithGoals.isEmpty) {
-      return {
-        'totalGoals': 0,
-        'completedGoals': 0,
-        'pendingGoals': 0,
-        'completionRate': 0.0,
-        'averageProgress': 0.0,
-      };
-    }
-
-    final completedGoals = routesWithGoals.where((route) => route.isGoalReached).length;
-    final totalProgress = routesWithGoals.fold<double>(0.0, (sum, route) => sum + route.goalProgress);
-    final averageProgress = totalProgress / routesWithGoals.length;
-
+    final goals = await getAllGoals();
+    final pendingGoals = goals.where((g) => !(g.isCompleted ?? false)).length;
+    final averageProgress = goals.isNotEmpty
+        ? goals.map((g) => g.progress ?? 0.0).reduce((a, b) => a + b) / goals.length
+        : 0.0;
     return {
-      'totalGoals': routesWithGoals.length,
-      'completedGoals': completedGoals,
-      'pendingGoals': routesWithGoals.length - completedGoals,
-      'completionRate': completedGoals / routesWithGoals.length,
+      'pendingGoals': pendingGoals,
       'averageProgress': averageProgress,
     };
   }
