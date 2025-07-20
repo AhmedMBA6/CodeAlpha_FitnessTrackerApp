@@ -40,7 +40,7 @@ class Step1Type extends StatelessWidget {
                   width: 2,
                 ),
                 boxShadow: isSelected
-                    ? [BoxShadow(color: Theme.of(context).colorScheme.primary.withOpacity(0.2), blurRadius: 8)]
+                    ? [BoxShadow(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2), blurRadius: 8)]
                     : [],
               ),
               width: 72,

@@ -23,7 +23,7 @@ class GoalProgressService {
     GoalStatus status = GoalStatus.notStarted;
     if (goal.goalType == GoalType.quantitative) {
       if (goal.unit == 'calories') {
-        final totalCalories = logs.fold<double>(0.0, (sum, log) => sum + (log.calories ?? 0.0));
+        final totalCalories = logs.fold<double>(0.0, (sum, log) => sum + log.calories);
         progress = (goal.targetValue != null && goal.targetValue! > 0)
             ? (totalCalories / goal.targetValue!).clamp(0.0, 1.0)
             : 0.0;
@@ -33,7 +33,7 @@ class GoalProgressService {
             ? (totalDistance / goal.targetValue!).clamp(0.0, 1.0)
             : 0.0;
       } else if (goal.unit == 'minutes' || goal.unit == 'hours') {
-        final totalMinutes = logs.fold<double>(0.0, (sum, log) => sum + (log.duration ?? 0.0));
+        final totalMinutes = logs.fold<double>(0.0, (sum, log) => sum + log.duration);
         progress = (goal.targetValue != null && goal.targetValue! > 0)
             ? (totalMinutes / goal.targetValue!).clamp(0.0, 1.0)
             : 0.0;
@@ -48,7 +48,7 @@ class GoalProgressService {
       status = GoalStatus.completed;
     } else {
       final now = DateTime.now();
-      final lastUpdated = goal.createdAt; // createdAt is non-nullable
+      final lastUpdated = goal.createdAt;
       final daysSinceUpdate = now.difference(lastUpdated).inDays;
       if (daysSinceUpdate >= 7) {
         status = GoalStatus.inactive;

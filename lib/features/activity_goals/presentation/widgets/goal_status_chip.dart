@@ -27,7 +27,7 @@ class GoalStatusChip extends StatelessWidget {
       label: 'Goal status: $label',
       child: Chip(
         label: Text(label, style: TextStyle(color: color)),
-        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       ),
     );

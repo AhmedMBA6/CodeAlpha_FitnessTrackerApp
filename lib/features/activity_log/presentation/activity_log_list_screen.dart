@@ -712,7 +712,7 @@ class _EnhancedActivityCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               theme.colorScheme.surface,
-              theme.colorScheme.surfaceVariant.withOpacity(0.3),
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             ],
           ),
         ),
@@ -727,7 +727,7 @@ class _EnhancedActivityCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: activityColor.withOpacity(0.1),
+                      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(activityIcon, color: activityColor, size: 24),
@@ -758,9 +758,9 @@ class _EnhancedActivityCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -845,11 +845,11 @@ class _EnhancedActivityCard extends StatelessWidget {
                   runSpacing: 4,
                   children: linkedGoals.map((goal) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green.withOpacity(0.3)),
-                    ),
+                                          decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                      ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -884,7 +884,7 @@ class _EnhancedActivityCard extends StatelessWidget {
                          label: const Text('Edit'),
                          style: OutlinedButton.styleFrom(
                            foregroundColor: theme.colorScheme.primary,
-                           side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.5)),
+                           side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.5)),
                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                          ),
                        ),
@@ -895,7 +895,7 @@ class _EnhancedActivityCard extends StatelessWidget {
                          label: const Text('Delete'),
                          style: OutlinedButton.styleFrom(
                            foregroundColor: Colors.red,
-                           side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                           side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                          ),
                        ),

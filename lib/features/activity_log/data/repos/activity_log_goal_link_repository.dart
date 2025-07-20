@@ -44,6 +44,7 @@ class SQLiteActivityLogGoalLinkRepository implements ActivityLogGoalLinkReposito
     await _dbHelper.updateLink(data);
   }
 
+  @override
   /// Deletes all links for a specific activity log
   Future<void> deleteAllLinksForActivityLog(String activityLogId) async {
     print('[LINK_REPO] deleteAllLinksForActivityLog called with activityLogId: $activityLogId');

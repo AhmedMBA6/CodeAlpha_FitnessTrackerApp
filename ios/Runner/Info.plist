@@ -51,7 +51,5 @@
 	<string>This app needs access to your location even when the app is in the background to track your routes.</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
-	<key>GMSApiKey</key>
-	<string>AIzaSyCSV97-zyncu5b8agnJE-KxkGUNKHCbXgo</string>
 </dict>
 </plist>
