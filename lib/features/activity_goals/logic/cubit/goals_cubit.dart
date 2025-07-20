@@ -6,11 +6,16 @@ import '../../data/repositories/activity_goal_repository.dart';
 import 'goals_state.dart';
 import '../../../../core/utils/goal_progress_utils.dart';
 import '../../../activity_log/data/models/activity_log_model.dart';
+import 'package:codealpha_fitness_tracker_app/core/utils/di.dart';
+import 'dart:async';
 
 class GoalsCubit extends Cubit<GoalsState> {
   final ActivityGoalRepository _goalRepo;
   final ActivityLogGoalLinkRepository _linkRepo;
   final ActivityLogRepository? _activityLogRepo;
+  
+  // Data sync subscription
+  StreamSubscription<DataSyncEvent>? _dataSyncSubscription;
 
   GoalsCubit({
     required ActivityGoalRepository goalRepo,
@@ -21,6 +26,31 @@ class GoalsCubit extends Cubit<GoalsState> {
         _activityLogRepo = activityLogRepo,
         super(GoalsState(isLoading: true)) {
     loadGoals();
+    // Listen for data changes and refresh goals
+    _setupDataSyncListener();
+  }
+
+  void _setupDataSyncListener() {
+    try {
+      final dataSyncService = getIt<DataSyncService>();
+      _dataSyncSubscription = dataSyncService.events.listen((event) {
+        print('[GOALS] Received data sync event: ${event.type}');
+        // Refresh goals when activity data changes (affects goal progress)
+        if (event.type == 'activity_added' || 
+            event.type == 'activity_updated' || 
+            event.type == 'activity_deleted') {
+          loadGoals();
+        }
+      });
+    } catch (e) {
+      print('[GOALS] Error setting up data sync listener: $e');
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _dataSyncSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> loadGoals() async {

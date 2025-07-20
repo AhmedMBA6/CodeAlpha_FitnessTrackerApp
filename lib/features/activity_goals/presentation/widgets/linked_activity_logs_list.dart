@@ -42,7 +42,7 @@ class LinkedActivityLogsList extends StatelessWidget {
             return ListTile(
               title: Text(log.activityType),
               subtitle: Text(
-                'Duration: ${log.duration} min\nCalories: ${log.calories}\nDate: ${log.date.toLocal().toIso8601String().split('T').first}${log.heartRate != null ? '\nHeart Rate: ${log.heartRate}' : ''}${log.distance != null ? '\nDistance: ${log.distance} km' : ''}',
+                'Duration: ${log.duration} min\nCalories: ${log.calories}\nDate: ${log.date.toLocal().toIso8601String().split('T').first}${log.heartRate != null ? '\nHeart Rate: ${log.heartRate}' : ''}${log.distance != null ? '\nDistance: ${log.distance!.toStringAsFixed(2)} km' : ''}',
               ),
               isThreeLine: true,
             );

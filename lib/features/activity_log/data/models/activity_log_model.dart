@@ -1,11 +1,21 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'activity_log_model.g.dart';
+
+@JsonSerializable()
 class ActivityLogModel {
-  final int? id;
+  final String? id;
   final String activityType;
   final int duration; // in minutes
   final double calories;
+  @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   final DateTime date;
-  final int? heartRate; // optional
-  final double? distance; // optional (km)
+  final int? heartRate;
+  final double? distance; // in km
+  final List<String>? tags; // e.g., ['trapezius', 'cardio']
+  @JsonKey(ignore: true)
+  /// Transient: Only for UI convenience, not persisted. Do not use for DB queries.
+  final List<String>? linkedGoalIds;
 
   ActivityLogModel({
     this.id,
@@ -15,29 +25,45 @@ class ActivityLogModel {
     required this.date,
     this.heartRate,
     this.distance,
+    this.tags,
+    this.linkedGoalIds,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'activityType': activityType,
-      'duration': duration,
-      'calories': calories,
-      'date': date.toIso8601String(),
-      'heartRate': heartRate,
-      'distance': distance,
-    };
+  factory ActivityLogModel.fromJson(Map<String, dynamic> json) => _$ActivityLogModelFromJson(json);
+  Map<String, dynamic> toJson() => _$ActivityLogModelToJson(this);
+
+  ActivityLogModel copyWith({
+    String? id,
+    String? activityType,
+    int? duration,
+    double? calories,
+    DateTime? date,
+    int? heartRate,
+    double? distance,
+    List<String>? tags,
+    List<String>? linkedGoalIds,
+  }) {
+    return ActivityLogModel(
+      id: id ?? this.id,
+      activityType: activityType ?? this.activityType,
+      duration: duration ?? this.duration,
+      calories: calories ?? this.calories,
+      date: date ?? this.date,
+      heartRate: heartRate ?? this.heartRate,
+      distance: distance ?? this.distance,
+      tags: tags ?? this.tags,
+      linkedGoalIds: linkedGoalIds ?? this.linkedGoalIds,
+    );
   }
 
-  factory ActivityLogModel.fromMap(Map<String, dynamic> map) {
-    return ActivityLogModel(
-      id: map['id'] as int?,
-      activityType: map['activityType'] as String,
-      duration: map['duration'] as int,
-      calories: map['calories'] is int ? (map['calories'] as int).toDouble() : map['calories'] as double,
-      date: DateTime.parse(map['date'] as String),
-      heartRate: map['heartRate'] as int?,
-      distance: map['distance'] == null ? null : (map['distance'] is int ? (map['distance'] as int).toDouble() : map['distance'] as double),
-    );
+  static DateTime _dateTimeFromJson(dynamic value) => value is String ? DateTime.parse(value) : value as DateTime;
+  static String _dateTimeToJson(DateTime value) => value.toIso8601String();
+
+  /// Domain-level validation for activity log.
+  bool isValid({bool? realTime}) {
+    final validDuration = duration > 0;
+    final validCalories = calories >= 0;
+    final validRealTime = realTime == true ? duration > 0 : true;
+    return validDuration && validCalories && validRealTime;
   }
 } 

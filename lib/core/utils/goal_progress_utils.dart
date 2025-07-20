@@ -48,7 +48,7 @@ class GoalProgressService {
       status = GoalStatus.completed;
     } else {
       final now = DateTime.now();
-      final lastUpdated = goal.createdAt; // Optionally use last progress update
+      final lastUpdated = goal.createdAt; // createdAt is non-nullable
       final daysSinceUpdate = now.difference(lastUpdated).inDays;
       if (daysSinceUpdate >= 7) {
         status = GoalStatus.inactive;
